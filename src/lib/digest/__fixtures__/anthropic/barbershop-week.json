@@ -1,0 +1,10 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "<output>{\n  \"themeMovement\": [\n    { \"theme\": \"wait_time\", \"delta\": 2, \"direction\": \"up\" },\n    { \"theme\": \"service\", \"delta\": 1, \"direction\": \"up\" }\n  ],\n  \"topPatterns\": [\n    {\n      \"patternId\": \"barbershop-walkin-management\",\n      \"title\": \"Switch walk-ins to a virtual queue for the next two Saturdays\",\n      \"tailoredBody\": \"Two Reviewers complained about walk-in queues blocking the shop on Saturday. A free virtual-queue app for two Saturdays will tell you whether the underlying issue is throughput or perception.\",\n      \"evidence\": [\n        { \"reviewId\": \"r-bs-1\", \"starRating\": 2, \"redactedQuote\": \"Walk-in queue was out the door on Saturday morning.\", \"themes\": [\"wait_time\", \"service\"] }\n      ]\n    },\n    {\n      \"patternId\": \"wait-time-staffing-review\",\n      \"title\": \"Review peak-hour staffing levels against last quarter's rota\",\n      \"tailoredBody\": \"Three wait-time mentions this week — pull the last quarter's Saturday rota and compare staffing on the floor against what it used to be on equivalent peak Saturdays.\",\n      \"evidence\": [\n        { \"reviewId\": \"r-bs-2\", \"starRating\": 3, \"redactedQuote\": \"Booked appointments running 20 minutes late even though I arrived on time.\", \"themes\": [\"wait_time\"] }\n      ]\n    },\n    {\n      \"patternId\": \"service-recovery-outreach\",\n      \"title\": \"Run a service-recovery outreach to the week's unhappy Reviewers\",\n      \"tailoredBody\": \"You have two 1-2 star Reviews this week from booked customers who felt their slot was deprioritised for walk-ins. A short personal apology in the next 24 hours typically halves the risk of escalation.\",\n      \"evidence\": [\n        { \"reviewId\": \"r-bs-1\", \"starRating\": 2, \"redactedQuote\": \"Walk-in queue was out the door on Saturday morning.\", \"themes\": [\"wait_time\", \"service\"] }\n      ]\n    }\n  ],\n  \"overallTone\": \"concerning\"\n}</output>"
+    }
+  ],
+  "stop_reason": "end_turn",
+  "usage": { "input_tokens": 2000, "output_tokens": 350 }
+}

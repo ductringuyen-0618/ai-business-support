@@ -1,0 +1,15 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "<output>{\n  \"themeMovement\": [\n    { \"theme\": \"service\", \"delta\": 2, \"direction\": \"up\" },\n    { \"theme\": \"wait_time\", \"delta\": 3, \"direction\": \"up\" },\n    { \"theme\": \"product_quality\", \"delta\": -1, \"direction\": \"down\" }\n  ],\n  \"topPatterns\": [\n    {\n      \"patternId\": \"wait-time-staffing-review\",\n      \"title\": \"Review peak-hour staffing levels against last quarter's rota\",\n      \"tailoredBody\": \"Three Reviews this week called out long waits on the Friday lunch shift. Compare last quarter's rota for that slot against what is on the floor now — most wait-time clusters trace back to a single under-staffed shift pattern.\",\n      \"evidence\": [\n        { \"reviewId\": \"r-wait-1\", \"starRating\": 2, \"redactedQuote\": \"Waited 25 minutes for a sandwich at lunch on Friday.\", \"themes\": [\"wait_time\"] },\n        { \"reviewId\": \"r-wait-2\", \"starRating\": 3, \"redactedQuote\": \"Long queue at the till around midday — fewer staff than usual.\", \"themes\": [\"wait_time\", \"service\"] }\n      ]\n    },\n    {\n      \"patternId\": \"service-recovery-outreach\",\n      \"title\": \"Run a service-recovery outreach to the week's unhappy Reviewers\",\n      \"tailoredBody\": \"You have two 1-2 star Reviews this week from regulars who say they felt ignored. A short personal apology in the next 24 hours typically halves the chance of a follow-up complaint reaching social media.\",\n      \"evidence\": [\n        { \"reviewId\": \"r-service-1\", \"starRating\": 1, \"redactedQuote\": \"[REVIEWER] was ignored at the counter for ten minutes.\", \"themes\": [\"service\"] }\n      ]\n    },\n    {\n      \"patternId\": \"product-quality-batch-audit\",\n      \"title\": \"Audit the batch / supplier behind the week's quality complaints\",\n      \"tailoredBody\": \"One product-quality complaint landed Tuesday — cross-reference your delivery logs around that date. A single bad batch is the most common explanation for an isolated quality drop.\",\n      \"evidence\": [\n        { \"reviewId\": \"r-quality-1\", \"starRating\": 2, \"redactedQuote\": \"The pastries were stale on Tuesday morning.\", \"themes\": [\"product_quality\"] }\n      ]\n    }\n  ],\n  \"overallTone\": \"concerning\"\n}</output>"
+    }
+  ],
+  "stop_reason": "end_turn",
+  "usage": {
+    "input_tokens": 2400,
+    "output_tokens": 420,
+    "cache_creation_input_tokens": 1100,
+    "cache_read_input_tokens": 0
+  }
+}

@@ -1,0 +1,387 @@
+{
+  "skill_name": "digest-composer",
+  "prompt_version": "digest-v1",
+  "generated_at": "2026-05-23T16:17:06.761Z",
+  "mode": "fixture",
+  "summary": {
+    "cases": 5,
+    "passed": 5,
+    "failed": 0,
+    "pass_rate": 1,
+    "mechanical_assertions": 14,
+    "mechanical_passed": 14,
+    "behavioural_assertions": 0
+  },
+  "results": [
+    {
+      "id": "high-volume-mixed",
+      "passed": true,
+      "body": {
+        "themeMovement": [
+          {
+            "theme": "service",
+            "delta": 2,
+            "direction": "up"
+          },
+          {
+            "theme": "wait_time",
+            "delta": 3,
+            "direction": "up"
+          },
+          {
+            "theme": "product_quality",
+            "delta": -1,
+            "direction": "down"
+          }
+        ],
+        "topPatterns": [
+          {
+            "patternId": "wait-time-staffing-review",
+            "title": "Review peak-hour staffing levels against last quarter's rota",
+            "tailoredBody": "Three Reviews this week called out long waits on the Friday lunch shift. Compare last quarter's rota for that slot against what is on the floor now — most wait-time clusters trace back to a single under-staffed shift pattern.",
+            "evidence": [
+              {
+                "reviewId": "r-wait-1",
+                "starRating": 2,
+                "redactedQuote": "Waited 25 minutes for a sandwich at lunch on Friday.",
+                "themes": ["wait_time"]
+              },
+              {
+                "reviewId": "r-wait-2",
+                "starRating": 3,
+                "redactedQuote": "Long queue at the till around midday — fewer staff than usual.",
+                "themes": ["wait_time", "service"]
+              }
+            ]
+          },
+          {
+            "patternId": "service-recovery-outreach",
+            "title": "Run a service-recovery outreach to the week's unhappy Reviewers",
+            "tailoredBody": "You have two 1-2 star Reviews this week from regulars who say they felt ignored. A short personal apology in the next 24 hours typically halves the chance of a follow-up complaint reaching social media.",
+            "evidence": [
+              {
+                "reviewId": "r-service-1",
+                "starRating": 1,
+                "redactedQuote": "[REVIEWER] was ignored at the counter for ten minutes.",
+                "themes": ["service"]
+              }
+            ]
+          },
+          {
+            "patternId": "product-quality-batch-audit",
+            "title": "Audit the batch / supplier behind the week's quality complaints",
+            "tailoredBody": "One product-quality complaint landed Tuesday — cross-reference your delivery logs around that date. A single bad batch is the most common explanation for an isolated quality drop.",
+            "evidence": [
+              {
+                "reviewId": "r-quality-1",
+                "starRating": 2,
+                "redactedQuote": "The pastries were stale on Tuesday morning.",
+                "themes": ["product_quality"]
+              }
+            ]
+          }
+        ],
+        "overallTone": "concerning"
+      },
+      "error": null,
+      "capturedUserMessage": "Business: Acme Cafe\nBusiness industry: cafe\n\nTheme aggregates (current week vs previous week):\n  - product_quality: current=1, previous=2\n  - service: current=3, previous=1\n  - wait_time: current=4, previous=1\n\nCandidate Patterns (you must pick 3 from this list):\n  - id=\"service-recovery-outreach\" kind=remediation themes=[service] verticals=universal\n    title: Run a service-recovery outreach to the week's unhappy Reviewers\n    body: Identify the Reviewers who left 1–2 star Reviews mentioning service breakdowns this week and draft a personal apology + remediation offer. A 24-hour response window typically halves the chance of a follow-up complaint reaching social media.\n    signals: Multiple service-themed 1–2 star Reviews in the same week.\n  - id=\"service-script-refresh\" kind=remediation themes=[service] verticals=universal\n    title: Refresh front-line scripts for the top recurring complaint\n    body: Pull the single most repeated service complaint from this week's Reviews and write a 3-line response script the team can use when a customer raises it. Practise it at the next shift huddle.\n    signals: Same service complaint repeats across 3+ Reviews.\n  - id=\"service-shadow-shift\" kind=remediation themes=[service] verticals=universal\n    title: Shadow a full shift to confirm the gap is real\n    body: Spend one peak shift observing the customer journey end-to-end without intervening. Most repeating service complaints surface within 30 minutes of watching the live flow.\n    signals: Vague service complaints that don't point at one root cause.\n  - id=\"service-feedback-loop\" kind=remediation themes=[service,other] verticals=universal\n    title: Close the loop with the Reviewer once the fix lands\n    body: When a service issue raised in a Review is fixed, message the Reviewer with a one-line update. Showing you read and acted on the Review is the fastest path to a revised rating.\n    signals: Reviewer mentions a specific fixable issue (not a one-off mood complaint).\n  - id=\"product-quality-batch-audit\" kind=remediation themes=[product_quality] verticals=universal\n    title: Audit the batch / supplier behind the week's quality complaints\n    body: Cross-reference the dates of the negative product Reviews against your delivery / production logs. A single bad batch or supplier change is the most common explanation for a quality cluster.\n    signals: Quality complaints cluster within a 2–3 day window.\n  - id=\"product-quality-spec-check\" kind=remediation themes=[product_quality] verticals=universal\n    title: Re-check the spec on the most-complained-about item\n    body: Pull the recipe / spec sheet for the item Reviewers named most often this week and confirm it still matches what the team is actually producing. Specs drift quietly over months.\n    signals: One specific product / item named in multiple Reviews.\n  - id=\"product-quality-supplier-conversation\" kind=remediation themes=[product_quality] verticals=universal\n    title: Open a supplier conversation with the week's complaints in hand\n    body: Send the relevant supplier a concise note quoting (anonymised) Reviewer complaints. Suppliers respond faster to specific customer feedback than to generic quality concerns.\n    signals: Quality complaints point at an ingredient / component you don't make in-house.\n  - id=\"product-quality-secret-shopper\" kind=remediation themes=[product_quality,service] verticals=universal\n    title: Run a secret-shopper pass on the flagged item\n    body: Have someone unfamiliar to the team order or use the item and report back with photos. Often catches the quality drift the regular team has stopped noticing.\n    signals: Repeated complaints about an item the team insists is fine.\n  - id=\"wait-time-staffing-review\" kind=remediation themes=[wait_time] verticals=universal\n    title: Review peak-hour staffing levels against last quarter's rota\n    body: Compare the rota for the days Reviewers complained about waiting with the same days last quarter. Most wait-time clusters trace back to a single under-staffed shift pattern.\n    signals: wait_time mentioned 3+ times in a single week.\n  - id=\"wait-time-queue-comms\" kind=remediation themes=[wait_time] verticals=universal\n    title: Set an explicit wait-time expectation at the door\n    body: Reviewers tolerate waits twice as long when the expected duration is stated up front. Brief the host / greeter to quote a current wait and offer a wait-list SMS.\n    signals: Reviewer says the wait was unexpected, not that it was long.\n  - id=\"wait-time-throughput-bottleneck\" kind=remediation themes=[wait_time] verticals=universal\n    title: Time the bottleneck step end-to-end on a busy shift\n    body: Pick the step Reviewers complain about (order-taking, prep, payment) and stopwatch it across 20 customers on a busy shift. Throughput problems almost always live in one step, not the whole flow.\n    signals: Reviews mention slowness at a specific stage (ordering, paying, food coming out).\n  - id=\"wait-time-online-queue\" kind=remediation themes=[wait_time] verticals=universal\n    title: Add an online queue or callback system\n    body: If wait-time complaints come from Reviewers physically queueing on-site, an online queue (SMS callback, virtual ticket) typically cuts the perceived wait by half within two weeks.\n    signals: Wait-time complaints describe standing in line, not in-seat waits.\n  - id=\"staff-attitude-policy-clarity\" kind=remediation themes=[staff_attitude,service] verticals=universal\n    title: Clarify the policy the team was enforcing\n    body: Many attitude complaints stem from a staff member enforcing a real policy (no refunds after X, no substitutions) without the soft skills to explain it warmly. Write the policy + the warm-explanation script together.\n    signals: Reviewer is angry about a refusal or refusal-style interaction.\n  - id=\"restaurant-food-safety-audit\" kind=remediation themes=[cleanliness,product_quality] verticals=restaurant,cafe\n    title: Run an internal food-safety audit before the next inspection\n    body: A Reviewer mentioning anything food-safety adjacent (illness, off taste, hair, cross-contamination) should trigger a same-week internal audit. Document temperatures, dates, and handwashing compliance.\n    signals: Any Review hints at illness, off taste, or cross-contamination.\n  - id=\"restaurant-table-turn-review\" kind=remediation themes=[wait_time] verticals=restaurant,cafe\n    title: Recalculate table-turn assumptions against actual data\n    body: Pull the last four Friday/Saturday seatings and measure actual table-turn vs. the planned cadence. Most weekend wait-time complaints come from a 5–10 minute overrun no one is tracking.\n    signals: Wait-time complaints concentrate on weekend evenings.\n  - id=\"reinforce-named-staff-shoutout\" kind=reinforcement themes=[service,staff_attitude] verticals=universal\n    title: Shout out the named staff member in the team channel\n    body: Reviewers naming a specific team member positively is the highest-signal compliment you'll get. Share the quote (with the Reviewer anonymised if needed) in the team channel and reference it in the next 1-on-1.\n    signals: Positive Review names a specific staff member.\n  - id=\"reinforce-replicate-the-good-shift\" kind=reinforcement themes=[service,wait_time,cleanliness] verticals=universal\n    title: Identify what was different about the praised shift\n    body: Find the shift that prompted the positive Reviews and list what was different: who was on, what was prepped, what wasn't. Replicating a good shift is more reliable than trying to fix a bad one.\n    signals: Cluster of positive Reviews on a specific day / shift.\n  - id=\"reinforce-share-on-storefront\" kind=reinforcement themes=[service,product_quality,cleanliness,staff_attitude] verticals=universal\n    title: Pin the strongest Review of the week to your storefront\n    body: A single specific, recent positive Review on your Google / Yelp profile is worth more than ten generic five-stars. Pin the strongest one and link to it from your website.\n    signals: At least one detailed positive Review with a quotable line.\n  - id=\"reinforce-loyalty-thanks\" kind=reinforcement themes=[pricing,service] verticals=universal\n    title: Send a personal thanks to repeat positive Reviewers\n    body: Reviewers who post a second positive Review months apart are your most valuable advocates. A brief personal thanks (not a discount) signals you noticed and tends to produce a third Review.\n    signals: Same Reviewer has posted positively before.\n  - id=\"reinforce-document-the-good\" kind=reinforcement themes=[product_quality,cleanliness,accessibility,other] verticals=universal\n    title: Document what's working so the team doesn't drift\n    body: Whatever earned the positive Reviews this week is at risk of quiet erosion. Write a one-paragraph note in the operations log describing the practice, the team, and the period — your future self will thank you.\n    signals: Two or more positive Reviews praising the same operational detail.\n  - id=\"reinforce-ask-for-photo\" kind=reinforcement themes=[product_quality] verticals=universal\n    title: Invite the happy Reviewer to add a photo\n    body: Positive Reviews with photos sit higher in Source rankings and convert better. Reply to the Reviewer thanking them and gently invite a photo if they took one.\n    signals: Detailed positive Review with no photo attached.\n  - id=\"reinforce-loop-back-after-complaint-resolved\" kind=reinforcement themes=[service,other] verticals=universal\n    title: Loop back to Reviewers whose past complaint you fixed\n    body: If a previous-month complaint has been addressed, message that Reviewer with a one-line update. The strongest second Reviews come from Reviewers who saw their feedback taken seriously.\n    signals: A previously-complaining Reviewer is silent this week and the underlying issue is fixed.\n\nReview quotes (redacted, draw evidence verbatim from this list):\n  - reviewId=\"r-wait-2\" stars=3 themes=[wait_time,service]\n    quote: Long queue at the till around midday — fewer staff than usual.\n  - reviewId=\"r-service-1\" stars=1 themes=[service]\n    quote: [REVIEWER] was ignored at the counter for ten minutes.\n  - reviewId=\"r-mixed-1\" stars=4 themes=[service]\n    quote: Mostly good, slight slow service.\n  - reviewId=\"r-wait-1\" stars=2 themes=[wait_time]\n    quote: Waited 25 minutes for a sandwich at lunch on Friday.\n  - reviewId=\"r-quality-1\" stars=2 themes=[product_quality]\n    quote: The pastries were stale on Tuesday morning.\n\nProduce the <output>...</output> JSON per the system prompt.",
+      "assertions": [
+        {
+          "id": "three_patterns",
+          "type": "mechanical",
+          "description": "topPatterns has length 3",
+          "passed": true
+        },
+        {
+          "id": "tone_concerning",
+          "type": "mechanical",
+          "description": "overallTone is \"concerning\"",
+          "passed": true
+        },
+        {
+          "id": "pattern_ids_in_playbook",
+          "type": "mechanical",
+          "description": "every patternId is present in PLAYBOOK",
+          "passed": true
+        },
+        {
+          "id": "evidence_in_input",
+          "type": "mechanical",
+          "description": "every evidence.redactedQuote appears verbatim in the input reviews",
+          "passed": true
+        }
+      ],
+      "latencyMs": 14
+    },
+    {
+      "id": "all-positive",
+      "passed": true,
+      "body": {
+        "themeMovement": [
+          {
+            "theme": "service",
+            "delta": 3,
+            "direction": "up"
+          },
+          {
+            "theme": "product_quality",
+            "delta": 2,
+            "direction": "up"
+          }
+        ],
+        "topPatterns": [
+          {
+            "patternId": "reinforce-named-staff-shoutout",
+            "title": "Shout out the named staff member in the team channel",
+            "tailoredBody": "Two Reviewers this week named a specific staff member positively — share the quotes (anonymising the Reviewer) in the team channel and reference them at the next 1-on-1.",
+            "evidence": [
+              {
+                "reviewId": "r-pos-1",
+                "starRating": 5,
+                "redactedQuote": "The team are wonderful — [REVIEWER] always remembers my order.",
+                "themes": ["service", "staff_attitude"]
+              }
+            ]
+          },
+          {
+            "patternId": "reinforce-share-on-storefront",
+            "title": "Pin the strongest Review of the week to your storefront",
+            "tailoredBody": "You have a detailed 5-star Review praising the pastries and the morning team. Pin it to your Google profile and link to it from your website — a recent specific positive Review is worth more than ten generic five-stars.",
+            "evidence": [
+              {
+                "reviewId": "r-pos-2",
+                "starRating": 5,
+                "redactedQuote": "Best bakery in town. Pastries are perfect and the morning team is brilliant.",
+                "themes": ["product_quality", "service"]
+              }
+            ]
+          },
+          {
+            "patternId": "reinforce-replicate-the-good-shift",
+            "title": "Identify what was different about the praised shift",
+            "tailoredBody": "The positive Reviews this week cluster on Saturday morning shifts. List who was on, what was prepped, what was different — replicating a good shift is more reliable than fixing a bad one.",
+            "evidence": [
+              {
+                "reviewId": "r-pos-3",
+                "starRating": 5,
+                "redactedQuote": "Saturday morning visit was perfect — quick service and great coffee.",
+                "themes": ["service", "wait_time"]
+              }
+            ]
+          }
+        ],
+        "overallTone": "celebrate"
+      },
+      "error": null,
+      "capturedUserMessage": "Business: Acme Bakery\nBusiness industry: cafe\n\nTheme aggregates (current week vs previous week):\n  - product_quality: current=2, previous=0\n  - service: current=4, previous=1\n\nCandidate Patterns (you must pick 3 from this list):\n  - id=\"service-recovery-outreach\" kind=remediation themes=[service] verticals=universal\n    title: Run a service-recovery outreach to the week's unhappy Reviewers\n    body: Identify the Reviewers who left 1–2 star Reviews mentioning service breakdowns this week and draft a personal apology + remediation offer. A 24-hour response window typically halves the chance of a follow-up complaint reaching social media.\n    signals: Multiple service-themed 1–2 star Reviews in the same week.\n  - id=\"service-script-refresh\" kind=remediation themes=[service] verticals=universal\n    title: Refresh front-line scripts for the top recurring complaint\n    body: Pull the single most repeated service complaint from this week's Reviews and write a 3-line response script the team can use when a customer raises it. Practise it at the next shift huddle.\n    signals: Same service complaint repeats across 3+ Reviews.\n  - id=\"service-shadow-shift\" kind=remediation themes=[service] verticals=universal\n    title: Shadow a full shift to confirm the gap is real\n    body: Spend one peak shift observing the customer journey end-to-end without intervening. Most repeating service complaints surface within 30 minutes of watching the live flow.\n    signals: Vague service complaints that don't point at one root cause.\n  - id=\"service-feedback-loop\" kind=remediation themes=[service,other] verticals=universal\n    title: Close the loop with the Reviewer once the fix lands\n    body: When a service issue raised in a Review is fixed, message the Reviewer with a one-line update. Showing you read and acted on the Review is the fastest path to a revised rating.\n    signals: Reviewer mentions a specific fixable issue (not a one-off mood complaint).\n  - id=\"product-quality-batch-audit\" kind=remediation themes=[product_quality] verticals=universal\n    title: Audit the batch / supplier behind the week's quality complaints\n    body: Cross-reference the dates of the negative product Reviews against your delivery / production logs. A single bad batch or supplier change is the most common explanation for a quality cluster.\n    signals: Quality complaints cluster within a 2–3 day window.\n  - id=\"product-quality-spec-check\" kind=remediation themes=[product_quality] verticals=universal\n    title: Re-check the spec on the most-complained-about item\n    body: Pull the recipe / spec sheet for the item Reviewers named most often this week and confirm it still matches what the team is actually producing. Specs drift quietly over months.\n    signals: One specific product / item named in multiple Reviews.\n  - id=\"product-quality-supplier-conversation\" kind=remediation themes=[product_quality] verticals=universal\n    title: Open a supplier conversation with the week's complaints in hand\n    body: Send the relevant supplier a concise note quoting (anonymised) Reviewer complaints. Suppliers respond faster to specific customer feedback than to generic quality concerns.\n    signals: Quality complaints point at an ingredient / component you don't make in-house.\n  - id=\"product-quality-secret-shopper\" kind=remediation themes=[product_quality,service] verticals=universal\n    title: Run a secret-shopper pass on the flagged item\n    body: Have someone unfamiliar to the team order or use the item and report back with photos. Often catches the quality drift the regular team has stopped noticing.\n    signals: Repeated complaints about an item the team insists is fine.\n  - id=\"wait-time-staffing-review\" kind=remediation themes=[wait_time] verticals=universal\n    title: Review peak-hour staffing levels against last quarter's rota\n    body: Compare the rota for the days Reviewers complained about waiting with the same days last quarter. Most wait-time clusters trace back to a single under-staffed shift pattern.\n    signals: wait_time mentioned 3+ times in a single week.\n  - id=\"wait-time-queue-comms\" kind=remediation themes=[wait_time] verticals=universal\n    title: Set an explicit wait-time expectation at the door\n    body: Reviewers tolerate waits twice as long when the expected duration is stated up front. Brief the host / greeter to quote a current wait and offer a wait-list SMS.\n    signals: Reviewer says the wait was unexpected, not that it was long.\n  - id=\"wait-time-throughput-bottleneck\" kind=remediation themes=[wait_time] verticals=universal\n    title: Time the bottleneck step end-to-end on a busy shift\n    body: Pick the step Reviewers complain about (order-taking, prep, payment) and stopwatch it across 20 customers on a busy shift. Throughput problems almost always live in one step, not the whole flow.\n    signals: Reviews mention slowness at a specific stage (ordering, paying, food coming out).\n  - id=\"wait-time-online-queue\" kind=remediation themes=[wait_time] verticals=universal\n    title: Add an online queue or callback system\n    body: If wait-time complaints come from Reviewers physically queueing on-site, an online queue (SMS callback, virtual ticket) typically cuts the perceived wait by half within two weeks.\n    signals: Wait-time complaints describe standing in line, not in-seat waits.\n  - id=\"staff-attitude-named-coaching\" kind=remediation themes=[staff_attitude] verticals=universal\n    title: Coach the named team member privately within 48 hours\n    body: When a Reviewer names a specific staff member, a private, non-disciplinary coaching conversation within 48 hours is the highest-leverage move. Don't share the Review verbatim — paraphrase the behaviour.\n    signals: A staff member is named explicitly in a negative Review.\n  - id=\"staff-attitude-shift-debrief\" kind=remediation themes=[staff_attitude] verticals=universal\n    title: Run a 10-minute shift debrief on the day in question\n    body: Identify the shift the complaint happened on and ask the whole team what was unusual that day. Attitude complaints often correlate with stress events (a no-show, a system outage) the team will tell you about.\n    signals: Attitude complaint is anonymous but tied to a specific date / shift.\n  - id=\"staff-attitude-policy-clarity\" kind=remediation themes=[staff_attitude,service] verticals=universal\n    title: Clarify the policy the team was enforcing\n    body: Many attitude complaints stem from a staff member enforcing a real policy (no refunds after X, no substitutions) without the soft skills to explain it warmly. Write the policy + the warm-explanation script together.\n    signals: Reviewer is angry about a refusal or refusal-style interaction.\n  - id=\"staff-attitude-team-sentiment\" kind=remediation themes=[staff_attitude] verticals=universal\n    title: Check in on team sentiment before more Reviews land\n    body: Persistent staff-attitude complaints almost always reflect team morale, not individual personality. Run a 1-on-1 with each customer-facing team member this week and ask one question: what's making the job harder than it should be?\n    signals: Attitude complaints from multiple different Reviewers in the same week.\n  - id=\"accessibility-staff-training\" kind=remediation themes=[accessibility,staff_attitude] verticals=universal\n    title: Brief the team on accessible-service basics\n    body: Run a 15-minute team brief covering the basics: ask before helping, speak directly to the customer (not their companion), keep aisles clear. Reviewers more often complain about the interaction than the building itself.\n    signals: Accessibility complaint describes a staff interaction, not a physical barrier.\n  - id=\"restaurant-food-safety-audit\" kind=remediation themes=[cleanliness,product_quality] verticals=restaurant,cafe\n    title: Run an internal food-safety audit before the next inspection\n    body: A Reviewer mentioning anything food-safety adjacent (illness, off taste, hair, cross-contamination) should trigger a same-week internal audit. Document temperatures, dates, and handwashing compliance.\n    signals: Any Review hints at illness, off taste, or cross-contamination.\n  - id=\"restaurant-table-turn-review\" kind=remediation themes=[wait_time] verticals=restaurant,cafe\n    title: Recalculate table-turn assumptions against actual data\n    body: Pull the last four Friday/Saturday seatings and measure actual table-turn vs. the planned cadence. Most weekend wait-time complaints come from a 5–10 minute overrun no one is tracking.\n    signals: Wait-time complaints concentrate on weekend evenings.\n  - id=\"reinforce-named-staff-shoutout\" kind=reinforcement themes=[service,staff_attitude] verticals=universal\n    title: Shout out the named staff member in the team channel\n    body: Reviewers naming a specific team member positively is the highest-signal compliment you'll get. Share the quote (with the Reviewer anonymised if needed) in the team channel and reference it in the next 1-on-1.\n    signals: Positive Review names a specific staff member.\n  - id=\"reinforce-replicate-the-good-shift\" kind=reinforcement themes=[service,wait_time,cleanliness] verticals=universal\n    title: Identify what was different about the praised shift\n    body: Find the shift that prompted the positive Reviews and list what was different: who was on, what was prepped, what wasn't. Replicating a good shift is more reliable than trying to fix a bad one.\n    signals: Cluster of positive Reviews on a specific day / shift.\n  - id=\"reinforce-share-on-storefront\" kind=reinforcement themes=[service,product_quality,cleanliness,staff_attitude] verticals=universal\n    title: Pin the strongest Review of the week to your storefront\n    body: A single specific, recent positive Review on your Google / Yelp profile is worth more than ten generic five-stars. Pin the strongest one and link to it from your website.\n    signals: At least one detailed positive Review with a quotable line.\n  - id=\"reinforce-loyalty-thanks\" kind=reinforcement themes=[pricing,service] verticals=universal\n    title: Send a personal thanks to repeat positive Reviewers\n    body: Reviewers who post a second positive Review months apart are your most valuable advocates. A brief personal thanks (not a discount) signals you noticed and tends to produce a third Review.\n    signals: Same Reviewer has posted positively before.\n  - id=\"reinforce-document-the-good\" kind=reinforcement themes=[product_quality,cleanliness,accessibility,other] verticals=universal\n    title: Document what's working so the team doesn't drift\n    body: Whatever earned the positive Reviews this week is at risk of quiet erosion. Write a one-paragraph note in the operations log describing the practice, the team, and the period — your future self will thank you.\n    signals: Two or more positive Reviews praising the same operational detail.\n  - id=\"reinforce-ask-for-photo\" kind=reinforcement themes=[product_quality] verticals=universal\n    title: Invite the happy Reviewer to add a photo\n    body: Positive Reviews with photos sit higher in Source rankings and convert better. Reply to the Reviewer thanking them and gently invite a photo if they took one.\n    signals: Detailed positive Review with no photo attached.\n  - id=\"reinforce-loop-back-after-complaint-resolved\" kind=reinforcement themes=[service,other] verticals=universal\n    title: Loop back to Reviewers whose past complaint you fixed\n    body: If a previous-month complaint has been addressed, message that Reviewer with a one-line update. The strongest second Reviews come from Reviewers who saw their feedback taken seriously.\n    signals: A previously-complaining Reviewer is silent this week and the underlying issue is fixed.\n\nReview quotes (redacted, draw evidence verbatim from this list):\n  - reviewId=\"r-pos-3\" stars=5 themes=[service,wait_time]\n    quote: Saturday morning visit was perfect — quick service and great coffee.\n  - reviewId=\"r-pos-1\" stars=5 themes=[service,staff_attitude]\n    quote: The team are wonderful — [REVIEWER] always remembers my order.\n  - reviewId=\"r-pos-2\" stars=5 themes=[product_quality,service]\n    quote: Best bakery in town. Pastries are perfect and the morning team is brilliant.\n  - reviewId=\"r-pos-4\" stars=5 themes=[service]\n    quote: Lovely shop, lovely team.\n\nProduce the <output>...</output> JSON per the system prompt.",
+      "assertions": [
+        {
+          "id": "three_patterns",
+          "type": "mechanical",
+          "description": "topPatterns has length 3",
+          "passed": true
+        },
+        {
+          "id": "tone_celebrate",
+          "type": "mechanical",
+          "description": "overallTone is \"celebrate\"",
+          "passed": true
+        },
+        {
+          "id": "all_reinforcement",
+          "type": "mechanical",
+          "description": "every patternId belongs to a Pattern with kind=\"reinforcement\"",
+          "passed": true
+        }
+      ],
+      "latencyMs": 1
+    },
+    {
+      "id": "all-negative",
+      "passed": true,
+      "body": {
+        "themeMovement": [
+          {
+            "theme": "cleanliness",
+            "delta": 2,
+            "direction": "up"
+          },
+          {
+            "theme": "service",
+            "delta": 3,
+            "direction": "up"
+          },
+          {
+            "theme": "staff_attitude",
+            "delta": 1,
+            "direction": "up"
+          }
+        ],
+        "topPatterns": [
+          {
+            "patternId": "cleanliness-restroom-audit",
+            "title": "Audit restroom cleaning frequency against peak traffic",
+            "tailoredBody": "Two Reviews this week specifically named the restrooms as the issue, both on Friday/Saturday evenings. Double your cleaning intervals during those peak hours and photograph before/after for the team channel.",
+            "evidence": [
+              {
+                "reviewId": "r-neg-1",
+                "starRating": 1,
+                "redactedQuote": "Restrooms were filthy on Saturday evening — clearly hadn't been cleaned in hours.",
+                "themes": ["cleanliness"]
+              }
+            ]
+          },
+          {
+            "patternId": "staff-attitude-named-coaching",
+            "title": "Coach the named team member privately within 48 hours",
+            "tailoredBody": "A Reviewer named a specific bartender as being dismissive. Have a private, non-disciplinary coaching conversation in the next 48 hours — don't share the Review verbatim; paraphrase the behaviour.",
+            "evidence": [
+              {
+                "reviewId": "r-neg-2",
+                "starRating": 1,
+                "redactedQuote": "The bartender was rude and dismissive when I asked for a substitution.",
+                "themes": ["staff_attitude"]
+              }
+            ]
+          },
+          {
+            "patternId": "service-recovery-outreach",
+            "title": "Run a service-recovery outreach to the week's unhappy Reviewers",
+            "tailoredBody": "Three of the five Reviews this week were 1-2 stars naming service breakdowns. A personal apology + remediation offer within 24 hours halves the chance of a follow-up complaint reaching social media.",
+            "evidence": [
+              {
+                "reviewId": "r-neg-3",
+                "starRating": 1,
+                "redactedQuote": "Worst service experience of my year — nobody acknowledged us.",
+                "themes": ["service"]
+              }
+            ]
+          }
+        ],
+        "overallTone": "concerning"
+      },
+      "error": null,
+      "capturedUserMessage": "Business: Acme Bar\nBusiness industry: restaurant\n\nTheme aggregates (current week vs previous week):\n  - cleanliness: current=2, previous=0\n  - service: current=3, previous=0\n  - staff_attitude: current=1, previous=0\n\nCandidate Patterns (you must pick 3 from this list):\n  - id=\"service-recovery-outreach\" kind=remediation themes=[service] verticals=universal\n    title: Run a service-recovery outreach to the week's unhappy Reviewers\n    body: Identify the Reviewers who left 1–2 star Reviews mentioning service breakdowns this week and draft a personal apology + remediation offer. A 24-hour response window typically halves the chance of a follow-up complaint reaching social media.\n    signals: Multiple service-themed 1–2 star Reviews in the same week.\n  - id=\"service-script-refresh\" kind=remediation themes=[service] verticals=universal\n    title: Refresh front-line scripts for the top recurring complaint\n    body: Pull the single most repeated service complaint from this week's Reviews and write a 3-line response script the team can use when a customer raises it. Practise it at the next shift huddle.\n    signals: Same service complaint repeats across 3+ Reviews.\n  - id=\"service-shadow-shift\" kind=remediation themes=[service] verticals=universal\n    title: Shadow a full shift to confirm the gap is real\n    body: Spend one peak shift observing the customer journey end-to-end without intervening. Most repeating service complaints surface within 30 minutes of watching the live flow.\n    signals: Vague service complaints that don't point at one root cause.\n  - id=\"service-feedback-loop\" kind=remediation themes=[service,other] verticals=universal\n    title: Close the loop with the Reviewer once the fix lands\n    body: When a service issue raised in a Review is fixed, message the Reviewer with a one-line update. Showing you read and acted on the Review is the fastest path to a revised rating.\n    signals: Reviewer mentions a specific fixable issue (not a one-off mood complaint).\n  - id=\"product-quality-secret-shopper\" kind=remediation themes=[product_quality,service] verticals=universal\n    title: Run a secret-shopper pass on the flagged item\n    body: Have someone unfamiliar to the team order or use the item and report back with photos. Often catches the quality drift the regular team has stopped noticing.\n    signals: Repeated complaints about an item the team insists is fine.\n  - id=\"cleanliness-deep-clean\" kind=remediation themes=[cleanliness] verticals=universal\n    title: Schedule a one-off deep clean of the area Reviewers named\n    body: Block a slot before opening this week for a deep clean of the specific area mentioned in Reviews (restrooms, table edges, floors). Photograph before/after for the team channel.\n    signals: Reviewers mention a specific area being unclean.\n  - id=\"cleanliness-checklist-rotation\" kind=remediation themes=[cleanliness] verticals=universal\n    title: Rotate the cleaning-checklist owner each shift\n    body: Cleaning checklists go stale when the same person signs them every day. Rotate the owner per shift and require a photo at sign-off for the next two weeks.\n    signals: Cleanliness complaints persist despite a checklist being in place.\n  - id=\"cleanliness-restroom-audit\" kind=remediation themes=[cleanliness] verticals=universal\n    title: Audit restroom cleaning frequency against peak traffic\n    body: Restrooms are the most common cleanliness complaint and the first thing Reviewers photograph. Check whether cleaning intervals double during your busiest hours.\n    signals: Cleanliness complaint specifically names restrooms / toilets.\n  - id=\"staff-attitude-named-coaching\" kind=remediation themes=[staff_attitude] verticals=universal\n    title: Coach the named team member privately within 48 hours\n    body: When a Reviewer names a specific staff member, a private, non-disciplinary coaching conversation within 48 hours is the highest-leverage move. Don't share the Review verbatim — paraphrase the behaviour.\n    signals: A staff member is named explicitly in a negative Review.\n  - id=\"staff-attitude-shift-debrief\" kind=remediation themes=[staff_attitude] verticals=universal\n    title: Run a 10-minute shift debrief on the day in question\n    body: Identify the shift the complaint happened on and ask the whole team what was unusual that day. Attitude complaints often correlate with stress events (a no-show, a system outage) the team will tell you about.\n    signals: Attitude complaint is anonymous but tied to a specific date / shift.\n  - id=\"staff-attitude-policy-clarity\" kind=remediation themes=[staff_attitude,service] verticals=universal\n    title: Clarify the policy the team was enforcing\n    body: Many attitude complaints stem from a staff member enforcing a real policy (no refunds after X, no substitutions) without the soft skills to explain it warmly. Write the policy + the warm-explanation script together.\n    signals: Reviewer is angry about a refusal or refusal-style interaction.\n  - id=\"staff-attitude-team-sentiment\" kind=remediation themes=[staff_attitude] verticals=universal\n    title: Check in on team sentiment before more Reviews land\n    body: Persistent staff-attitude complaints almost always reflect team morale, not individual personality. Run a 1-on-1 with each customer-facing team member this week and ask one question: what's making the job harder than it should be?\n    signals: Attitude complaints from multiple different Reviewers in the same week.\n  - id=\"accessibility-staff-training\" kind=remediation themes=[accessibility,staff_attitude] verticals=universal\n    title: Brief the team on accessible-service basics\n    body: Run a 15-minute team brief covering the basics: ask before helping, speak directly to the customer (not their companion), keep aisles clear. Reviewers more often complain about the interaction than the building itself.\n    signals: Accessibility complaint describes a staff interaction, not a physical barrier.\n  - id=\"restaurant-food-safety-audit\" kind=remediation themes=[cleanliness,product_quality] verticals=restaurant,cafe\n    title: Run an internal food-safety audit before the next inspection\n    body: A Reviewer mentioning anything food-safety adjacent (illness, off taste, hair, cross-contamination) should trigger a same-week internal audit. Document temperatures, dates, and handwashing compliance.\n    signals: Any Review hints at illness, off taste, or cross-contamination.\n  - id=\"reinforce-named-staff-shoutout\" kind=reinforcement themes=[service,staff_attitude] verticals=universal\n    title: Shout out the named staff member in the team channel\n    body: Reviewers naming a specific team member positively is the highest-signal compliment you'll get. Share the quote (with the Reviewer anonymised if needed) in the team channel and reference it in the next 1-on-1.\n    signals: Positive Review names a specific staff member.\n  - id=\"reinforce-replicate-the-good-shift\" kind=reinforcement themes=[service,wait_time,cleanliness] verticals=universal\n    title: Identify what was different about the praised shift\n    body: Find the shift that prompted the positive Reviews and list what was different: who was on, what was prepped, what wasn't. Replicating a good shift is more reliable than trying to fix a bad one.\n    signals: Cluster of positive Reviews on a specific day / shift.\n  - id=\"reinforce-share-on-storefront\" kind=reinforcement themes=[service,product_quality,cleanliness,staff_attitude] verticals=universal\n    title: Pin the strongest Review of the week to your storefront\n    body: A single specific, recent positive Review on your Google / Yelp profile is worth more than ten generic five-stars. Pin the strongest one and link to it from your website.\n    signals: At least one detailed positive Review with a quotable line.\n  - id=\"reinforce-loyalty-thanks\" kind=reinforcement themes=[pricing,service] verticals=universal\n    title: Send a personal thanks to repeat positive Reviewers\n    body: Reviewers who post a second positive Review months apart are your most valuable advocates. A brief personal thanks (not a discount) signals you noticed and tends to produce a third Review.\n    signals: Same Reviewer has posted positively before.\n  - id=\"reinforce-document-the-good\" kind=reinforcement themes=[product_quality,cleanliness,accessibility,other] verticals=universal\n    title: Document what's working so the team doesn't drift\n    body: Whatever earned the positive Reviews this week is at risk of quiet erosion. Write a one-paragraph note in the operations log describing the practice, the team, and the period — your future self will thank you.\n    signals: Two or more positive Reviews praising the same operational detail.\n  - id=\"reinforce-loop-back-after-complaint-resolved\" kind=reinforcement themes=[service,other] verticals=universal\n    title: Loop back to Reviewers whose past complaint you fixed\n    body: If a previous-month complaint has been addressed, message that Reviewer with a one-line update. The strongest second Reviews come from Reviewers who saw their feedback taken seriously.\n    signals: A previously-complaining Reviewer is silent this week and the underlying issue is fixed.\n\nReview quotes (redacted, draw evidence verbatim from this list):\n  - reviewId=\"r-neg-1\" stars=1 themes=[cleanliness]\n    quote: Restrooms were filthy on Saturday evening — clearly hadn't been cleaned in hours.\n  - reviewId=\"r-neg-4\" stars=2 themes=[cleanliness]\n    quote: Filthy floors throughout.\n  - reviewId=\"r-neg-3\" stars=1 themes=[service]\n    quote: Worst service experience of my year — nobody acknowledged us.\n  - reviewId=\"r-neg-2\" stars=1 themes=[staff_attitude]\n    quote: The bartender was rude and dismissive when I asked for a substitution.\n\nProduce the <output>...</output> JSON per the system prompt.",
+      "assertions": [
+        {
+          "id": "three_patterns",
+          "type": "mechanical",
+          "description": "topPatterns has length 3",
+          "passed": true
+        },
+        {
+          "id": "tone_concerning",
+          "type": "mechanical",
+          "description": "overallTone is \"concerning\"",
+          "passed": true
+        },
+        {
+          "id": "all_remediation",
+          "type": "mechanical",
+          "description": "every patternId belongs to a Pattern with kind=\"remediation\"",
+          "passed": true
+        }
+      ],
+      "latencyMs": 1
+    },
+    {
+      "id": "zero-review-week",
+      "passed": true,
+      "body": null,
+      "error": null,
+      "capturedUserMessage": null,
+      "assertions": [
+        {
+          "id": "skip_zero_reviews",
+          "type": "mechanical",
+          "description": "handler skips a zero-Review period without calling composeDigest, inserting a row, or sending mail",
+          "passed": true
+        }
+      ],
+      "latencyMs": 0
+    },
+    {
+      "id": "industry-misfit-barbershop",
+      "passed": true,
+      "body": {
+        "themeMovement": [
+          {
+            "theme": "wait_time",
+            "delta": 2,
+            "direction": "up"
+          },
+          {
+            "theme": "service",
+            "delta": 1,
+            "direction": "up"
+          }
+        ],
+        "topPatterns": [
+          {
+            "patternId": "barbershop-walkin-management",
+            "title": "Switch walk-ins to a virtual queue for the next two Saturdays",
+            "tailoredBody": "Two Reviewers complained about walk-in queues blocking the shop on Saturday. A free virtual-queue app for two Saturdays will tell you whether the underlying issue is throughput or perception.",
+            "evidence": [
+              {
+                "reviewId": "r-bs-1",
+                "starRating": 2,
+                "redactedQuote": "Walk-in queue was out the door on Saturday morning.",
+                "themes": ["wait_time", "service"]
+              }
+            ]
+          },
+          {
+            "patternId": "wait-time-staffing-review",
+            "title": "Review peak-hour staffing levels against last quarter's rota",
+            "tailoredBody": "Three wait-time mentions this week — pull the last quarter's Saturday rota and compare staffing on the floor against what it used to be on equivalent peak Saturdays.",
+            "evidence": [
+              {
+                "reviewId": "r-bs-2",
+                "starRating": 3,
+                "redactedQuote": "Booked appointments running 20 minutes late even though I arrived on time.",
+                "themes": ["wait_time"]
+              }
+            ]
+          },
+          {
+            "patternId": "service-recovery-outreach",
+            "title": "Run a service-recovery outreach to the week's unhappy Reviewers",
+            "tailoredBody": "You have two 1-2 star Reviews this week from booked customers who felt their slot was deprioritised for walk-ins. A short personal apology in the next 24 hours typically halves the risk of escalation.",
+            "evidence": [
+              {
+                "reviewId": "r-bs-1",
+                "starRating": 2,
+                "redactedQuote": "Walk-in queue was out the door on Saturday morning.",
+                "themes": ["wait_time", "service"]
+              }
+            ]
+          }
+        ],
+        "overallTone": "concerning"
+      },
+      "error": null,
+      "capturedUserMessage": "Business: Acme Cuts\nBusiness industry: barbershop\n\nTheme aggregates (current week vs previous week):\n  - service: current=2, previous=1\n  - wait_time: current=3, previous=1\n\nCandidate Patterns (you must pick 3 from this list):\n  - id=\"service-recovery-outreach\" kind=remediation themes=[service] verticals=universal\n    title: Run a service-recovery outreach to the week's unhappy Reviewers\n    body: Identify the Reviewers who left 1–2 star Reviews mentioning service breakdowns this week and draft a personal apology + remediation offer. A 24-hour response window typically halves the chance of a follow-up complaint reaching social media.\n    signals: Multiple service-themed 1–2 star Reviews in the same week.\n  - id=\"service-script-refresh\" kind=remediation themes=[service] verticals=universal\n    title: Refresh front-line scripts for the top recurring complaint\n    body: Pull the single most repeated service complaint from this week's Reviews and write a 3-line response script the team can use when a customer raises it. Practise it at the next shift huddle.\n    signals: Same service complaint repeats across 3+ Reviews.\n  - id=\"service-shadow-shift\" kind=remediation themes=[service] verticals=universal\n    title: Shadow a full shift to confirm the gap is real\n    body: Spend one peak shift observing the customer journey end-to-end without intervening. Most repeating service complaints surface within 30 minutes of watching the live flow.\n    signals: Vague service complaints that don't point at one root cause.\n  - id=\"service-feedback-loop\" kind=remediation themes=[service,other] verticals=universal\n    title: Close the loop with the Reviewer once the fix lands\n    body: When a service issue raised in a Review is fixed, message the Reviewer with a one-line update. Showing you read and acted on the Review is the fastest path to a revised rating.\n    signals: Reviewer mentions a specific fixable issue (not a one-off mood complaint).\n  - id=\"product-quality-secret-shopper\" kind=remediation themes=[product_quality,service] verticals=universal\n    title: Run a secret-shopper pass on the flagged item\n    body: Have someone unfamiliar to the team order or use the item and report back with photos. Often catches the quality drift the regular team has stopped noticing.\n    signals: Repeated complaints about an item the team insists is fine.\n  - id=\"wait-time-staffing-review\" kind=remediation themes=[wait_time] verticals=universal\n    title: Review peak-hour staffing levels against last quarter's rota\n    body: Compare the rota for the days Reviewers complained about waiting with the same days last quarter. Most wait-time clusters trace back to a single under-staffed shift pattern.\n    signals: wait_time mentioned 3+ times in a single week.\n  - id=\"wait-time-queue-comms\" kind=remediation themes=[wait_time] verticals=universal\n    title: Set an explicit wait-time expectation at the door\n    body: Reviewers tolerate waits twice as long when the expected duration is stated up front. Brief the host / greeter to quote a current wait and offer a wait-list SMS.\n    signals: Reviewer says the wait was unexpected, not that it was long.\n  - id=\"wait-time-throughput-bottleneck\" kind=remediation themes=[wait_time] verticals=universal\n    title: Time the bottleneck step end-to-end on a busy shift\n    body: Pick the step Reviewers complain about (order-taking, prep, payment) and stopwatch it across 20 customers on a busy shift. Throughput problems almost always live in one step, not the whole flow.\n    signals: Reviews mention slowness at a specific stage (ordering, paying, food coming out).\n  - id=\"wait-time-online-queue\" kind=remediation themes=[wait_time] verticals=universal\n    title: Add an online queue or callback system\n    body: If wait-time complaints come from Reviewers physically queueing on-site, an online queue (SMS callback, virtual ticket) typically cuts the perceived wait by half within two weeks.\n    signals: Wait-time complaints describe standing in line, not in-seat waits.\n  - id=\"staff-attitude-policy-clarity\" kind=remediation themes=[staff_attitude,service] verticals=universal\n    title: Clarify the policy the team was enforcing\n    body: Many attitude complaints stem from a staff member enforcing a real policy (no refunds after X, no substitutions) without the soft skills to explain it warmly. Write the policy + the warm-explanation script together.\n    signals: Reviewer is angry about a refusal or refusal-style interaction.\n  - id=\"barbershop-walkin-management\" kind=remediation themes=[wait_time,service] verticals=barbershop,salon\n    title: Switch walk-ins to a virtual queue for the next two Saturdays\n    body: Walk-in queues physically clog the shop and frustrate booked customers. A free virtual-queue app for two Saturdays will tell you whether the underlying issue is throughput or perception.\n    signals: Wait-time or service complaints on weekends with mention of walk-ins.\n  - id=\"salon-consultation-discipline\" kind=remediation themes=[service,product_quality] verticals=salon,barbershop\n    title: Reinforce the pre-service consultation script\n    body: Most service / outcome complaints in personal-care trace back to a rushed consultation. Require a 3-minute consultation with reference photos for every colour / cut service this week.\n    signals: Reviewer says the outcome didn't match what they asked for.\n  - id=\"reinforce-named-staff-shoutout\" kind=reinforcement themes=[service,staff_attitude] verticals=universal\n    title: Shout out the named staff member in the team channel\n    body: Reviewers naming a specific team member positively is the highest-signal compliment you'll get. Share the quote (with the Reviewer anonymised if needed) in the team channel and reference it in the next 1-on-1.\n    signals: Positive Review names a specific staff member.\n  - id=\"reinforce-replicate-the-good-shift\" kind=reinforcement themes=[service,wait_time,cleanliness] verticals=universal\n    title: Identify what was different about the praised shift\n    body: Find the shift that prompted the positive Reviews and list what was different: who was on, what was prepped, what wasn't. Replicating a good shift is more reliable than trying to fix a bad one.\n    signals: Cluster of positive Reviews on a specific day / shift.\n  - id=\"reinforce-share-on-storefront\" kind=reinforcement themes=[service,product_quality,cleanliness,staff_attitude] verticals=universal\n    title: Pin the strongest Review of the week to your storefront\n    body: A single specific, recent positive Review on your Google / Yelp profile is worth more than ten generic five-stars. Pin the strongest one and link to it from your website.\n    signals: At least one detailed positive Review with a quotable line.\n  - id=\"reinforce-loyalty-thanks\" kind=reinforcement themes=[pricing,service] verticals=universal\n    title: Send a personal thanks to repeat positive Reviewers\n    body: Reviewers who post a second positive Review months apart are your most valuable advocates. A brief personal thanks (not a discount) signals you noticed and tends to produce a third Review.\n    signals: Same Reviewer has posted positively before.\n  - id=\"reinforce-loop-back-after-complaint-resolved\" kind=reinforcement themes=[service,other] verticals=universal\n    title: Loop back to Reviewers whose past complaint you fixed\n    body: If a previous-month complaint has been addressed, message that Reviewer with a one-line update. The strongest second Reviews come from Reviewers who saw their feedback taken seriously.\n    signals: A previously-complaining Reviewer is silent this week and the underlying issue is fixed.\n\nReview quotes (redacted, draw evidence verbatim from this list):\n  - reviewId=\"r-bs-1\" stars=2 themes=[wait_time,service]\n    quote: Walk-in queue was out the door on Saturday morning.\n  - reviewId=\"r-bs-2\" stars=3 themes=[wait_time]\n    quote: Booked appointments running 20 minutes late even though I arrived on time.\n  - reviewId=\"r-bs-3\" stars=4 themes=[wait_time,service]\n    quote: Fade was sharp but waited a while.\n\nProduce the <output>...</output> JSON per the system prompt.",
+      "assertions": [
+        {
+          "id": "three_patterns",
+          "type": "mechanical",
+          "description": "topPatterns has length 3",
+          "passed": true
+        },
+        {
+          "id": "no_restaurant_only_in_candidates",
+          "type": "mechanical",
+          "description": "the user message sent to Anthropic does NOT list restaurant-only Pattern ids",
+          "passed": true
+        },
+        {
+          "id": "barbershop_pattern_in_candidates",
+          "type": "mechanical",
+          "description": "the user message sent to Anthropic lists barbershop-walkin-management as a candidate",
+          "passed": true
+        }
+      ],
+      "latencyMs": 0
+    }
+  ]
+}

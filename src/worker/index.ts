@@ -9,6 +9,8 @@
  */
 import {
   BACKFILL_SOURCE_JOB,
+  COMPOSE_DIGEST_ENQUEUER_JOB,
+  COMPOSE_DIGEST_JOB,
   DELIVER_ESCALATION_JOB,
   FIRE_INCIDENT_JOB,
   INGEST_REVIEW_JOB,
@@ -18,6 +20,7 @@ import {
 } from "../queue/boss";
 import { getIngestReviewConcurrency } from "../queue/config";
 import { handleBackfillSource } from "../queue/handlers/backfill-source";
+import { handleComposeDigest, handleComposeDigestEnqueuer } from "../queue/handlers/compose-digest";
 import { handleDeliverEscalation } from "../queue/handlers/deliver-escalation";
 import { handleFireIncident } from "../queue/handlers/fire-incident";
 import { handleIngestReview } from "../queue/handlers/ingest-review";
@@ -64,6 +67,25 @@ async function main() {
     handleDeliverEscalation,
   );
   console.log(`[worker] subscribed to queue: ${DELIVER_ESCALATION_JOB}`);
+
+  // `compose_digest` (slice 14). One job per (Business, week) emitted by the
+  // hourly enqueuer below. Single-threaded — Anthropic + Resend are the
+  // bottleneck, not pg-boss.
+  await boss.createQueue(COMPOSE_DIGEST_JOB);
+  await boss.work(COMPOSE_DIGEST_JOB, handleComposeDigest);
+  console.log(`[worker] subscribed to queue: ${COMPOSE_DIGEST_JOB}`);
+
+  // `compose_digest_enqueuer` (slice 14). pg-boss's cron is UTC-only, so we
+  // tick every hour on the hour and let the handler decide per Business
+  // (via its reference timezone) whether to emit a `compose_digest` job.
+  // The hourly cadence is the lowest-precision unit that lets us hit
+  // Monday 08:00 in every timezone exactly once per week per Business.
+  await boss.createQueue(COMPOSE_DIGEST_ENQUEUER_JOB);
+  await boss.work(COMPOSE_DIGEST_ENQUEUER_JOB, handleComposeDigestEnqueuer);
+  await boss.schedule(COMPOSE_DIGEST_ENQUEUER_JOB, "0 * * * *");
+  console.log(
+    `[worker] subscribed to queue: ${COMPOSE_DIGEST_ENQUEUER_JOB} (scheduled hourly @ 0 * * * *)`,
+  );
 
   console.log("[worker] ready. press ctrl-c to stop.");
 }
