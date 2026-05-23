@@ -38,3 +38,8 @@ coverage/
 
 # Drizzle local caches (migrations themselves under drizzle/ are checked in)
 drizzle/.cache
+
+# Playwright (slice 16)
+playwright-report/
+test-results/
+tests/e2e/.runtime.json

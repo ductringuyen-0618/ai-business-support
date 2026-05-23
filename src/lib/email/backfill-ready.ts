@@ -38,6 +38,19 @@ export interface ResendLike {
  * eval time (vitest discovery) doesn't crash when `RESEND_API_KEY` isn't set.
  */
 function defaultResend(): ResendLike {
+  if (process.env.E2E_TEST_MODE === "1") {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mockMod =
+      require("@/lib/test-mode/resend-mock") as typeof import("@/lib/test-mode/resend-mock");
+    const inner = mockMod.createE2EResendMock();
+    return {
+      emails: {
+        send: async (args) => {
+          await inner.send(args);
+        },
+      },
+    };
+  }
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     throw new Error(
