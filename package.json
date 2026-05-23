@@ -12,6 +12,8 @@
     "build": "next build",
     "start": "next start",
     "worker": "tsx src/worker/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "lint": "next lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
