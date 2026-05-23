@@ -1,0 +1,21 @@
+{
+  "reviews": [
+    {
+      "name": "accounts/111/locations/222/reviews/AbZc-multi-1-a",
+      "reviewer": { "displayName": "Reviewer One-A" },
+      "starRating": "FIVE",
+      "comment": "Excellent service.",
+      "createTime": "2026-05-10T10:00:00Z",
+      "updateTime": "2026-05-10T10:00:00Z"
+    },
+    {
+      "name": "accounts/111/locations/222/reviews/AbZc-multi-1-b",
+      "reviewer": { "displayName": "Reviewer One-B" },
+      "starRating": "FOUR",
+      "comment": "Solid all around.",
+      "createTime": "2026-05-09T10:00:00Z",
+      "updateTime": "2026-05-09T10:00:00Z"
+    }
+  ],
+  "nextPageToken": "page-2-token"
+}

@@ -1,0 +1,12 @@
+{
+  "reviews": [
+    {
+      "name": "accounts/111/locations/222/reviews/AbZc-multi-3-a",
+      "reviewer": { "displayName": "Reviewer Three-A" },
+      "starRating": "TWO",
+      "comment": "Dirty tables and a sticky floor.",
+      "createTime": "2026-05-06T10:00:00Z",
+      "updateTime": "2026-05-06T10:00:00Z"
+    }
+  ]
+}
