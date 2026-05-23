@@ -15,6 +15,13 @@
       "when": 1779520240181,
       "tag": "0001_operators_deleted_at",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779521382400,
+      "tag": "0002_operator_channel_prefs",
+      "breakpoints": true
     }
   ]
 }

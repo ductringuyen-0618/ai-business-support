@@ -1,15 +1,25 @@
 /**
  * Database schema.
  *
- * Slice 1 only introduces the two foundational tables (Businesses + Operators)
- * so that the migration story is proven end-to-end. Later slices extend this
- * file with source_connections, reviews, classifications, incidents,
- * escalations, digests, operator_channel_prefs (see PRD #1).
+ * Slice 1 introduced the two foundational tables (Businesses + Operators).
+ * Slice 6 adds `operator_channel_prefs` to back the EscalationRouter
+ * (see `src/lib/escalation/`). Later slices extend this file with
+ * source_connections, reviews, classifications, incidents, escalations,
+ * digests (see PRD #1).
  *
  * Terminology follows CONTEXT.md verbatim: rows here represent Businesses and
  * Operators (NOT "tenants" / "users").
  */
-import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  pgEnum,
+  pgTable,
+  primaryKey,
+  text,
+  time,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 export const businesses = pgTable("businesses", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -41,7 +51,43 @@ export const operators = pgTable("operators", {
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
 
+/**
+ * Channels through which an Escalation can be delivered to an Operator.
+ * MVP scope: Email (always available) and SMS (opt-in per Operator).
+ * See CONTEXT.md "Channel" and ADR-0009.
+ */
+export const channelEnum = pgEnum("channel", ["email", "sms"]);
+
+/**
+ * Per-(Operator, Channel) preferences used by the EscalationRouter.
+ *
+ * - `enabled = false` means no Delivery is produced for that (Operator, Channel).
+ * - `quiet_hours_start` / `quiet_hours_end` are local-time `time` values; they
+ *   are interpreted in the row's `timezone` (IANA). Both null disables quiet
+ *   hours for the pair. Windows may cross midnight (e.g. 23:00–07:00).
+ * - `timezone` is an IANA zone name; defaults to UTC so a new Operator row is
+ *   never silently in a wrong zone.
+ */
+export const operatorChannelPrefs = pgTable(
+  "operator_channel_prefs",
+  {
+    operatorId: uuid("operator_id")
+      .notNull()
+      .references(() => operators.id, { onDelete: "cascade" }),
+    channel: channelEnum("channel").notNull(),
+    enabled: boolean("enabled").notNull().default(true),
+    quietHoursStart: time("quiet_hours_start"),
+    quietHoursEnd: time("quiet_hours_end"),
+    timezone: text("timezone").notNull().default("UTC"),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.operatorId, table.channel] }),
+  }),
+);
+
 export type Business = typeof businesses.$inferSelect;
 export type NewBusiness = typeof businesses.$inferInsert;
 export type Operator = typeof operators.$inferSelect;
 export type NewOperator = typeof operators.$inferInsert;
+export type OperatorChannelPrefRow = typeof operatorChannelPrefs.$inferSelect;
+export type NewOperatorChannelPrefRow = typeof operatorChannelPrefs.$inferInsert;
