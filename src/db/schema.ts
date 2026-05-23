@@ -4,8 +4,9 @@
  * Slice 1 introduced the two foundational tables (Businesses + Operators).
  * Slice 6 adds `operator_channel_prefs` to back the EscalationRouter
  * (see `src/lib/escalation/`). Slice 8 adds `source_connections` to back the
- * Google OAuth flow. Later slices extend this file with `reviews`,
- * `classifications`, `incidents`, `escalations`, `digests` (see PRD #1).
+ * Google OAuth flow. Slice 9 adds `reviews` + `classifications` to back the
+ * `ingest_review` pipeline (ADR-0004). Later slices extend this file with
+ * `incidents`, `escalations`, `digests` (see PRD #1).
  *
  * Terminology follows CONTEXT.md verbatim: rows here represent Businesses and
  * Operators (NOT "tenants" / "users").
@@ -13,6 +14,7 @@
 import {
   boolean,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   primaryKey,
@@ -20,6 +22,7 @@ import {
   time,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 
@@ -160,6 +163,69 @@ export const sourceConnections = pgTable(
   }),
 );
 
+/**
+ * One row per ingested Review (CONTEXT.md "Review"). The ingest pipeline
+ * lives in `src/queue/handlers/ingest-review.ts` and per ADR-0004 makes
+ * exactly one LLM call per row; the resulting `Classification` lives in the
+ * companion table below.
+ *
+ * `review_text` is nullable for two reasons:
+ *   1. Star-only Reviews (Google allows a 5-star with no body).
+ *   2. Deletion Request (ADR-0006) nulls the raw body in place; the row stays
+ *      so trend integrity is preserved.
+ * `redacted_text` is ALWAYS populated (possibly empty string) — it is the
+ * only text that ever leaves our boundary into Anthropic.
+ *
+ * Idempotency: `(source, source_review_id)` is unique so the same Review
+ * arriving twice (live Pub/Sub + backfill page, or backfill retry) upserts
+ * into the same row.
+ */
+export const reviews = pgTable(
+  "reviews",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    sourceConnectionId: uuid("source_connection_id")
+      .notNull()
+      .references(() => sourceConnections.id, { onDelete: "cascade" }),
+    source: sourceEnum("source").notNull(),
+    sourceReviewId: text("source_review_id").notNull(),
+    starRating: integer("star_rating").notNull(),
+    reviewText: text("review_text"),
+    reviewerDisplayName: text("reviewer_display_name"),
+    redactedText: text("redacted_text").notNull(),
+    postedAt: timestamp("posted_at", { withTimezone: true }).notNull(),
+    ingestedAt: timestamp("ingested_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    sourceReviewUnique: uniqueIndex("reviews_source_source_review_id_unique").on(
+      table.source,
+      table.sourceReviewId,
+    ),
+  }),
+);
+
+/**
+ * One row per Classification (CONTEXT.md "Theme", ADR-0004). Keyed by
+ * `review_id` so a Review has at most one Classification — re-classification
+ * (prompt v2 rollout) overwrites in place rather than versioning rows.
+ *
+ * `classifications` is absent when ingestion persisted the Review but the
+ * LLM call failed past pg-boss retries (see ingest-review handler). Slice 12
+ * dashboards surface those rows as "unclassified".
+ */
+export const classifications = pgTable("classifications", {
+  reviewId: uuid("review_id")
+    .primaryKey()
+    .references(() => reviews.id, { onDelete: "cascade" }),
+  promptVersion: text("prompt_version").notNull(),
+  isIncident: boolean("is_incident").notNull(),
+  severity: text("severity"),
+  themes: jsonb("themes").$type<string[]>().notNull(),
+  sentiment: text("sentiment").notNull(),
+  suggestedReply: text("suggested_reply").notNull(),
+  classifiedAt: timestamp("classified_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export type Business = typeof businesses.$inferSelect;
 export type NewBusiness = typeof businesses.$inferInsert;
 export type Operator = typeof operators.$inferSelect;
@@ -168,3 +234,7 @@ export type OperatorChannelPrefRow = typeof operatorChannelPrefs.$inferSelect;
 export type NewOperatorChannelPrefRow = typeof operatorChannelPrefs.$inferInsert;
 export type SourceConnectionRow = typeof sourceConnections.$inferSelect;
 export type NewSourceConnectionRow = typeof sourceConnections.$inferInsert;
+export type ReviewRow = typeof reviews.$inferSelect;
+export type NewReviewRow = typeof reviews.$inferInsert;
+export type ClassificationRow = typeof classifications.$inferSelect;
+export type NewClassificationRow = typeof classifications.$inferInsert;

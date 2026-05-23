@@ -10,8 +10,8 @@
 import { and, eq } from "drizzle-orm";
 
 import { getDb } from "@/db/client";
-import { sourceConnections } from "@/db/schema";
-import type { SourceConnectionRow } from "@/db/schema";
+import { businesses, sourceConnections } from "@/db/schema";
+import type { Business, SourceConnectionRow } from "@/db/schema";
 import { encryptToken } from "@/lib/source-tokens/encrypt";
 
 export interface UpsertGoogleConnectionInput {
@@ -83,6 +83,37 @@ export async function getSourceConnectionById(id: string): Promise<SourceConnect
   const rows = await db
     .select()
     .from(sourceConnections)
+    .where(eq(sourceConnections.id, id))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+/**
+ * A `source_connections` row joined to its owning Business. Used by the
+ * `ingest_review` handler (slice 9) to assemble the Classifier's
+ * `businessProfile` input without a second round-trip.
+ */
+export interface SourceConnectionWithBusiness {
+  sourceConnection: SourceConnectionRow;
+  business: Business;
+}
+
+/**
+ * Find a `source_connections` row by id, joined to its owning Business.
+ * Returns null if the row has vanished between enqueue and dispatch (e.g.
+ * Business cancelled mid-backfill).
+ */
+export async function findSourceConnectionWithBusiness(
+  id: string,
+): Promise<SourceConnectionWithBusiness | null> {
+  const db = getDb();
+  const rows = await db
+    .select({
+      sourceConnection: sourceConnections,
+      business: businesses,
+    })
+    .from(sourceConnections)
+    .innerJoin(businesses, eq(sourceConnections.businessId, businesses.id))
     .where(eq(sourceConnections.id, id))
     .limit(1);
   return rows[0] ?? null;
