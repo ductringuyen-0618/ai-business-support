@@ -13,14 +13,28 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Node / Next.js (pre-emptive — the bootstrap agent will add more)
+# Node / Next.js
 node_modules/
 .next/
 out/
 *.log
 .turbo/
+.pnpm-store/
+
+# Build output
+build/
+dist/
+
+# Vercel
+.vercel
+
+# TypeScript build info
+*.tsbuildinfo
 
 # Coverage / test output
 coverage/
 .nyc_output/
 *-results-*.json
+
+# Drizzle local caches (migrations themselves under drizzle/ are checked in)
+drizzle/.cache
