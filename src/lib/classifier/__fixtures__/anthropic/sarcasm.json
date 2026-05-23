@@ -1,0 +1,15 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "<output>{\"is_incident\": false, \"severity\": null, \"themes\": [\"wait_time\", \"service\"], \"sentiment\": \"negative\", \"suggested_reply\": \"Thank you for the honest feedback — a 45-minute wait for a coffee is not acceptable and we hear you. We are looking at staffing during morning rush and would appreciate the chance to do better next time you stop in.\"}</output>"
+    }
+  ],
+  "stop_reason": "end_turn",
+  "usage": {
+    "input_tokens": 855,
+    "output_tokens": 88,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 850
+  }
+}

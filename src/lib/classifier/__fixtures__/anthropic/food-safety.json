@@ -1,0 +1,15 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "<output>{\"is_incident\": true, \"severity\": \"high\", \"themes\": [\"cleanliness\", \"product_quality\"], \"sentiment\": \"negative\", \"suggested_reply\": \"We are extremely sorry to hear this and take any food-safety concern seriously. Please contact us directly at the restaurant so we can investigate the batch and timing, document what happened, and make this right. Thank you for telling us.\"}</output>"
+    }
+  ],
+  "stop_reason": "end_turn",
+  "usage": {
+    "input_tokens": 860,
+    "output_tokens": 95,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 850
+  }
+}

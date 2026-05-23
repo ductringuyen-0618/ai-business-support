@@ -1,0 +1,20 @@
+{
+  "first": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Sure, here is the classification: this review is mildly negative about wait times. I would say is_incident is false."
+      }
+    ],
+    "stop_reason": "end_turn"
+  },
+  "second": {
+    "content": [
+      {
+        "type": "text",
+        "text": "<output>{\"is_incident\": false, \"severity\": null, \"themes\": [\"wait_time\"], \"sentiment\": \"negative\", \"suggested_reply\": \"Thank you for the feedback on the wait — we are working on staffing during busy hours and hope to do better next time.\"}</output>"
+      }
+    ],
+    "stop_reason": "end_turn"
+  }
+}

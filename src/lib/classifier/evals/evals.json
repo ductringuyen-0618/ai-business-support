@@ -1,0 +1,214 @@
+{
+  "skill_name": "classifier",
+  "prompt_version": "v1",
+  "description": "Layer-2 evals for the Classifier deep module. Each case provides a redacted Review + Business profile; the runner calls `classify()` and grades the structured output. We deliberately do NOT assert on the exact `suggested_reply` string — LLM nondeterminism makes that brittle — we assert on `is_incident`, `severity`, sentiment, and required `themes` overlap. See ../README.md for how to run.",
+  "evals": [
+    {
+      "id": "positive-5-star",
+      "prompt": "Best bakery in town! The staff are friendly and the pastries are perfect. [REVIEWER] always remembers my order.",
+      "input": {
+        "starRating": 5,
+        "postedAt": "2026-05-20T14:00:00Z",
+        "businessProfile": { "name": "Acme Bakery", "industry": "food_service" }
+      },
+      "expected_output": "Non-incident, positive sentiment, service/product_quality themes, neutral-warm reply.",
+      "assertions": [
+        { "type": "mechanical", "id": "is_incident_false", "description": "is_incident is false" },
+        { "type": "mechanical", "id": "severity_null", "description": "severity is null" },
+        {
+          "type": "mechanical",
+          "id": "sentiment_positive",
+          "description": "sentiment is \"positive\""
+        },
+        {
+          "type": "mechanical",
+          "id": "theme_overlap_service_or_product",
+          "description": "themes includes at least one of \"service\" or \"product_quality\""
+        },
+        {
+          "type": "mechanical",
+          "id": "reply_under_500",
+          "description": "suggested_reply length is between 1 and 500 characters"
+        }
+      ]
+    },
+    {
+      "id": "mild-negative-2-star",
+      "prompt": "Waited 25 minutes for a sandwich. Food was fine but the wait was rough. Probably won't come back at lunch.",
+      "input": {
+        "starRating": 2,
+        "postedAt": "2026-05-20T12:30:00Z",
+        "businessProfile": { "name": "Acme Bakery", "industry": "food_service" }
+      },
+      "expected_output": "Non-incident, negative sentiment, wait_time theme.",
+      "assertions": [
+        { "type": "mechanical", "id": "is_incident_false", "description": "is_incident is false" },
+        { "type": "mechanical", "id": "severity_null", "description": "severity is null" },
+        {
+          "type": "mechanical",
+          "id": "sentiment_negative",
+          "description": "sentiment is \"negative\""
+        },
+        {
+          "type": "mechanical",
+          "id": "theme_wait_time",
+          "description": "themes includes \"wait_time\""
+        }
+      ]
+    },
+    {
+      "id": "four-star-slur",
+      "prompt": "Food was good overall but one of the staff used a racial slur at the table next to ours. 4 stars only because the food itself was fine.",
+      "input": {
+        "starRating": 4,
+        "postedAt": "2026-05-20T19:00:00Z",
+        "businessProfile": { "name": "Acme Bakery", "industry": "food_service" }
+      },
+      "expected_output": "Incident at high severity (ADR-0002: content, not stars). staff_attitude theme. Apology-and-investigate reply that does not promise specific discipline.",
+      "assertions": [
+        { "type": "mechanical", "id": "is_incident_true", "description": "is_incident is true" },
+        { "type": "mechanical", "id": "severity_high", "description": "severity is \"high\"" },
+        {
+          "type": "mechanical",
+          "id": "theme_staff_attitude",
+          "description": "themes includes \"staff_attitude\""
+        },
+        {
+          "type": "mechanical",
+          "id": "sentiment_negative",
+          "description": "sentiment is \"negative\""
+        },
+        {
+          "type": "behavioural",
+          "id": "reply_no_invented_commitments",
+          "description": "suggested_reply does not invent a specific discount, refund amount, or firing commitment"
+        }
+      ]
+    },
+    {
+      "id": "food-safety",
+      "prompt": "I got severe food poisoning after eating here — was vomiting all night. There was a hair in my soup too.",
+      "input": {
+        "starRating": 1,
+        "postedAt": "2026-05-20T22:15:00Z",
+        "businessProfile": { "name": "Acme Bakery", "industry": "food_service" }
+      },
+      "expected_output": "Incident at high severity. cleanliness and/or product_quality themes.",
+      "assertions": [
+        { "type": "mechanical", "id": "is_incident_true", "description": "is_incident is true" },
+        { "type": "mechanical", "id": "severity_high", "description": "severity is \"high\"" },
+        {
+          "type": "mechanical",
+          "id": "theme_safety_overlap",
+          "description": "themes includes at least one of \"cleanliness\" or \"product_quality\""
+        }
+      ]
+    },
+    {
+      "id": "ambulance-medical-emergency",
+      "prompt": "An elderly customer collapsed in the cafe and the staff did nothing — we had to call an ambulance ourselves. The manager refused to help.",
+      "input": {
+        "starRating": 1,
+        "postedAt": "2026-05-20T16:45:00Z",
+        "businessProfile": { "name": "Acme Bakery", "industry": "food_service" }
+      },
+      "expected_output": "Incident at high severity. staff_attitude or accessibility or service themes.",
+      "assertions": [
+        { "type": "mechanical", "id": "is_incident_true", "description": "is_incident is true" },
+        { "type": "mechanical", "id": "severity_high", "description": "severity is \"high\"" },
+        {
+          "type": "mechanical",
+          "id": "theme_overlap_emergency",
+          "description": "themes includes at least one of \"staff_attitude\", \"accessibility\", or \"service\""
+        }
+      ]
+    },
+    {
+      "id": "sarcasm",
+      "prompt": "Oh wonderful, another 45 minutes for a coffee! Truly a delightful experience as always.",
+      "input": {
+        "starRating": 2,
+        "postedAt": "2026-05-20T08:00:00Z",
+        "businessProfile": { "name": "Acme Bakery", "industry": "food_service" }
+      },
+      "expected_output": "Negative sentiment despite positive surface words. wait_time theme.",
+      "assertions": [
+        {
+          "type": "mechanical",
+          "id": "sentiment_negative",
+          "description": "sentiment is \"negative\""
+        },
+        {
+          "type": "mechanical",
+          "id": "theme_wait_time",
+          "description": "themes includes \"wait_time\""
+        }
+      ]
+    },
+    {
+      "id": "non-english-spanish",
+      "prompt": "¡Qué experiencia tan maravillosa! La comida estaba deliciosa y el personal fue muy amable. Volveré pronto.",
+      "input": {
+        "starRating": 5,
+        "postedAt": "2026-05-20T20:00:00Z",
+        "businessProfile": { "name": "Acme Bakery", "industry": "food_service" }
+      },
+      "expected_output": "Non-incident, positive sentiment, Spanish-language reply.",
+      "assertions": [
+        { "type": "mechanical", "id": "is_incident_false", "description": "is_incident is false" },
+        {
+          "type": "mechanical",
+          "id": "sentiment_positive",
+          "description": "sentiment is \"positive\""
+        },
+        {
+          "type": "behavioural",
+          "id": "reply_in_spanish",
+          "description": "suggested_reply is written in Spanish to match the Review language"
+        }
+      ]
+    },
+    {
+      "id": "edge-empty-text",
+      "prompt": "",
+      "input": {
+        "starRating": 5,
+        "postedAt": "2026-05-20T10:00:00Z",
+        "businessProfile": { "name": "Acme Bakery", "industry": "food_service" }
+      },
+      "expected_output": "Edge case: no text, just stars. Should still produce a valid Classification, almost certainly non-incident and themed \"other\".",
+      "assertions": [
+        { "type": "mechanical", "id": "is_incident_false", "description": "is_incident is false" },
+        { "type": "mechanical", "id": "severity_null", "description": "severity is null" },
+        {
+          "type": "mechanical",
+          "id": "themes_non_empty",
+          "description": "themes is a non-empty array"
+        }
+      ]
+    },
+    {
+      "id": "edge-accessibility-soft-complaint",
+      "prompt": "Came in with my service dog and was asked to leave. Manager apologised when I explained but the staff member was rude.",
+      "input": {
+        "starRating": 3,
+        "postedAt": "2026-05-20T11:00:00Z",
+        "businessProfile": { "name": "Acme Bakery", "industry": "food_service" }
+      },
+      "expected_output": "Edge case: accessibility incident at medium severity (resolved on-site but staff training gap), accessibility + staff_attitude themes.",
+      "assertions": [
+        { "type": "mechanical", "id": "is_incident_true", "description": "is_incident is true" },
+        {
+          "type": "mechanical",
+          "id": "theme_accessibility",
+          "description": "themes includes \"accessibility\""
+        },
+        {
+          "type": "mechanical",
+          "id": "severity_set",
+          "description": "severity is one of \"low\", \"medium\", or \"high\""
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "<output>{\"is_incident\": true, \"severity\": \"high\", \"themes\": [\"accessibility\", \"staff_attitude\", \"service\"], \"sentiment\": \"negative\", \"suggested_reply\": \"This is deeply concerning and we are so sorry this happened. We want to understand exactly what occurred and review our staff response. Please contact the manager directly today so we can investigate, address the staff involved, and check in on the person affected.\"}</output>"
+    }
+  ],
+  "stop_reason": "end_turn",
+  "usage": {
+    "input_tokens": 875,
+    "output_tokens": 105,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 850
+  }
+}

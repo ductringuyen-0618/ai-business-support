@@ -1,0 +1,15 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "<output>{\"is_incident\": false, \"severity\": null, \"themes\": [\"wait_time\", \"service\"], \"sentiment\": \"negative\", \"suggested_reply\": \"Thank you for letting us know about the wait — we are sorry the visit was not what you hoped for. We are reviewing our staffing during peak hours and would love the chance to make it right next time.\"}</output>"
+    }
+  ],
+  "stop_reason": "end_turn",
+  "usage": {
+    "input_tokens": 855,
+    "output_tokens": 90,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 850
+  }
+}
