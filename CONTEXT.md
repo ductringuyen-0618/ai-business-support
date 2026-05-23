@@ -57,17 +57,26 @@ A category of feedback the classifier tags a Review with at ingest. A small fixe
 _Avoid_: Category, Tag (overloaded), Topic.
 
 **Digest**:
-A weekly email summary sent to each Operator. Reads already-classified Reviews from the past week, summarises Theme movement (improved/regressed), highlights the top 3 suggested actions, and is the second routine Operator touchpoint after Escalations.
+A weekly email summary sent to each Operator. Reads already-classified Reviews from the past week, summarises Theme movement (improved/regressed), highlights the top 3 suggested actions selected from the Playbook, and is the second routine Operator touchpoint after Escalations.
 _Avoid_: Report (too generic), Summary, Newsletter.
+
+**Playbook**:
+A curated catalogue of remediation Patterns, keyed by Theme, that the Digest LLM selects from when generating suggested actions. Lives in the repo, versioned with code, evolved by PR. See [ADR-0008](./docs/adr/0008-playbook-backed-digest-suggestions.md).
+_Avoid_: Library, Catalogue, Knowledge base.
+
+**Pattern**:
+A single entry in the Playbook — one specific action a Business could take. Has a Theme association, an optional industry-vertical filter, a short imperative title, and a short body. May represent a remediation (for negative Themes) or a reinforcement (for positive ones).
+_Avoid_: Action, Suggestion (the verb-output, not the noun-template), Playbook entry.
+
+### Privacy
+
+**Deletion Request**:
+A request from a Reviewer to remove their data from our system. Honoured by nulling the Reviewer's display name and the original Review text on the relevant Review row, while keeping the row itself so trend integrity is preserved. Handled manually via support email in MVP. See [ADR-0006](./docs/adr/0006-pii-redact-before-llm-full-storage.md).
+_Avoid_: Erasure request, Data subject request, Delete request.
 
 ## Flagged ambiguities
 
-Open questions that must be resolved before they bite — but didn't need to be answered in the first grilling session:
-
-- **PII & Reviewer-data handling.** Reviews contain Reviewer names and identifying detail. Decide before launching with real customer data: do we redact Reviewer names before sending Review text to the LLM? What's our retention policy? Do we support Reviewer deletion requests (GDPR / CCPA)? Likely an ADR before first paying Business.
-- **Suggestion shape: open-ended vs. light playbook.** The weekly Digest's top-3 suggested actions can be fully LLM-generated (more impressive, more inconsistent) or LLM-selected from a curated playbook of remediation patterns (more consistent, less impressive). Start open-ended; revisit after first 5 Businesses worth of feedback.
-- **Backfill behaviour on signup.** When a Business connects Google, do we ingest the full review history (could be 200+ Reviews, one-time ~$2 LLM cost) or only Reviews from connect-time forward? Likely full backfill — it makes the dashboard useful on day 1 — but confirm.
-- **Auth provider.** Clerk vs Auth.js vs Supabase Auth. Decide when building the signup flow.
+_All previously flagged items resolved as of grilling session 2. New ones logged here as they surface._
 
 ## Example dialogue
 
