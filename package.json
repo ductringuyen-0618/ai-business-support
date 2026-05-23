@@ -37,12 +37,15 @@
     "postgres": "^3.4.5",
     "react": "^19.0.3",
     "react-dom": "^19.0.3",
+    "recharts": "^3.8.1",
     "resend": "^6.12.3",
     "svix": "^1.94.0",
     "twilio": "^6.0.2",
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@clerk/testing": "^2.0.33",
+    "@playwright/test": "^1.60.0",
     "@types/node": "^22.10.5",
     "@types/react": "^19.0.7",
     "@types/react-dom": "^19.0.3",
