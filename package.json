@@ -19,6 +19,7 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "evals:classifier": "tsx src/lib/classifier/evals/run.ts",
+    "evals:digest": "tsx src/lib/digest/evals/run.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:studio": "drizzle-kit studio",

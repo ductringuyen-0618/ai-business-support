@@ -1,0 +1,10 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "<output>{\n  \"themeMovement\": [],\n  \"topPatterns\": [\n    { \"patternId\": \"made-up-pattern\", \"title\": \"x\", \"tailoredBody\": \"x\", \"evidence\": [{ \"reviewId\": \"r-wait-1\", \"starRating\": 2, \"redactedQuote\": \"Waited 25 minutes for a sandwich at lunch on Friday.\", \"themes\": [\"wait_time\"] }] }\n  ],\n  \"overallTone\": \"neutral\"\n}</output>"
+    }
+  ],
+  "stop_reason": "end_turn",
+  "usage": { "input_tokens": 2000, "output_tokens": 100 }
+}

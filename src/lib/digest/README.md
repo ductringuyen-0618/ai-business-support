@@ -96,7 +96,18 @@ _content_ are the ones that need the eval suite.
 
 ## Slice scope reminder
 
-This module is **slice 7 only**: data + the pure candidate filter. It
-deliberately does not call an LLM, does not read or write the database,
-and does not rank candidates. The Digest LLM call, the storage of picked
-Patterns in `digests.body`, and the email render all live in slice 14.
+Slice 7 shipped the data + the pure candidate filter. Slice 14 adds the
+LLM-tailoring layer:
+
+| File                      | Owner slice | Responsibility                                                                                                |
+| ------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------- |
+| `composer.ts`             | 14          | `composeDigest()` — the single LLM call. Selects 3 Patterns + tailors them. Zod-validated + retry-on-failure. |
+| `composer-types.ts`       | 14          | `DigestBody` shape persisted in `digests.body` (jsonb). Re-exported from `src/db/schema.ts`.                  |
+| `anthropic-client.ts`     | 14          | DI seam mirroring `src/lib/classifier/anthropic-client.ts`. `DIGEST_COMPOSER_MODEL` env override.             |
+| `prompts/v1.ts`           | 14          | Stable system prompt (cached via `cache_control: ephemeral`) + dynamic user-message builder + retry framing.  |
+| `__fixtures__/anthropic/` | 14          | Recorded Anthropic responses for the composer tests + eval baseline.                                          |
+| `evals/`                  | 14          | `evals.json` + `run.ts` + `benchmark.json` — the Layer-2 eval suite per `evaluate-skill`.                     |
+
+The cron + email-send glue lives outside this module: handler at
+`src/queue/handlers/compose-digest.ts`, email template at
+`src/lib/email/digest-email.ts`.

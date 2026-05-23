@@ -26,6 +26,8 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+import type { DigestBody } from "@/lib/digest/composer-types";
+
 export const businesses = pgTable("businesses", {
   id: uuid("id").primaryKey().defaultRandom(),
   // Clerk Organization id — Business has one Clerk org (see ADR-0009).
@@ -344,6 +346,54 @@ export const phoneVerifications = pgTable("phone_verifications", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/**
+ * Structured body of a Digest row (slice 14, ADR-0008).
+ *
+ * The canonical type lives in `src/lib/digest/composer-types.ts` (so the
+ * composer module owns its own data shape and the schema imports it, not
+ * the other way around — `src/lib/digest` does not depend on `src/db`).
+ * Re-exported here so consumers reading the `digests.body` column have one
+ * import line.
+ *
+ * Persisted verbatim in `digests.body` so that:
+ *   - the email template renderer can reconstruct a sent Digest deterministically;
+ *   - the Trends tab can deep-link the "what we recommended this week" view;
+ *   - outcome-tracking (deferred work in ADR-0008) can correlate which Patterns
+ *     the LLM picked against which Themes moved next month.
+ *
+ * `patternId` references `PLAYBOOK[*].id` in `src/lib/digest/playbook.ts`. Per
+ * the editing rules in that file, ids are stable forever — historical Digest
+ * rows continue to dereference cleanly.
+ *
+ * `evidence.redactedQuote` always carries the redacted form (the raw Reviewer
+ * text + name never enters this column). Star rating + Themes give the email
+ * template enough context to render a tasteful evidence card.
+ */
+export type { DigestBody } from "@/lib/digest/composer-types";
+
+/**
+ * One row per weekly Digest sent to a Business (CONTEXT.md "Digest",
+ * ADR-0008). Written by the `compose_digest` handler (slice 14) immediately
+ * before the email goes out, so a failed Resend send leaves no row — the
+ * next Monday's run is then free to compose a fresh Digest for the same
+ * window without colliding.
+ *
+ * `period_start` / `period_end` mark the 7-day window the Digest summarises,
+ * expressed in UTC. The window is computed in the Business's reference
+ * timezone (operators[0].timezone, falling back to UTC) — the conversion to
+ * UTC happens before the row is written.
+ */
+export const digests = pgTable("digests", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  businessId: uuid("business_id")
+    .notNull()
+    .references(() => businesses.id, { onDelete: "cascade" }),
+  periodStart: timestamp("period_start", { withTimezone: true }).notNull(),
+  periodEnd: timestamp("period_end", { withTimezone: true }).notNull(),
+  body: jsonb("body").$type<DigestBody>().notNull(),
+  sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export type Business = typeof businesses.$inferSelect;
 export type NewBusiness = typeof businesses.$inferInsert;
 export type Operator = typeof operators.$inferSelect;
@@ -364,3 +414,5 @@ export type EscalationRow = typeof escalations.$inferSelect;
 export type NewEscalationRow = typeof escalations.$inferInsert;
 export type PhoneVerificationRow = typeof phoneVerifications.$inferSelect;
 export type NewPhoneVerificationRow = typeof phoneVerifications.$inferInsert;
+export type DigestRow = typeof digests.$inferSelect;
+export type NewDigestRow = typeof digests.$inferInsert;

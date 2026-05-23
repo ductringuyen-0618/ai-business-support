@@ -52,6 +52,29 @@ export const FIRE_INCIDENT_JOB = "fire_incident" as const;
  */
 export const DELIVER_ESCALATION_JOB = "deliver_escalation" as const;
 
+/**
+ * The `compose_digest` queue (slice 14). One job per (Business, week) — the
+ * hourly enqueuer (`COMPOSE_DIGEST_ENQUEUER_JOB`) tick checks each Business's
+ * reference timezone and enqueues a `compose_digest` job at the start of
+ * Monday 08:00 local. The handler composes the Digest via the LLM and sends
+ * the email to every Operator.
+ *
+ * Deduped via `singletonKey: <business_id>-<iso-week>` so the enqueuer firing
+ * a second time within the same hour cannot produce a second Digest for the
+ * same week.
+ */
+export const COMPOSE_DIGEST_JOB = "compose_digest" as const;
+
+/**
+ * The `compose_digest_enqueuer` queue (slice 14). Hourly cron tick that
+ * surveys all Businesses, computes "is it Monday 08:00 in this Business's
+ * timezone right now?" and emits a `compose_digest` job per matching
+ * Business. Lives as a separate queue because pg-boss's cron string is
+ * UTC-only — we tick hourly in UTC and do the timezone check in code, which
+ * is the simplest correct way to honour per-Business local schedules.
+ */
+export const COMPOSE_DIGEST_ENQUEUER_JOB = "compose_digest_enqueuer" as const;
+
 export interface PingPayload {
   message: string;
   at: string;
@@ -89,6 +112,15 @@ export interface FireIncidentPayload {
  */
 export interface DeliverEscalationPayload {
   escalation_id: string;
+}
+
+/**
+ * Payload for `compose_digest` (slice 14). Kept minimal — the handler
+ * re-fetches the Business + Reviews so a stale payload cannot drift from
+ * the source of truth.
+ */
+export interface ComposeDigestPayload {
+  business_id: string;
 }
 
 function getQueueUrl(): string {
@@ -218,5 +250,33 @@ export async function enqueueDeliverEscalation(
   return boss.send(DELIVER_ESCALATION_JOB, payload, {
     ...DELIVER_ESCALATION_RETRY,
     ...(options.startAfter ? { startAfter: options.startAfter } : {}),
+  });
+}
+
+/**
+ * Enqueue a `compose_digest` job for a single Business (slice 14).
+ *
+ * `singletonKey: <business_id>-<isoYearWeek>` deduplicates re-runs of the
+ * same Business in the same ISO week — so if the hourly enqueuer fires
+ * twice within the same Monday-08:00-local hour (worker restart, manual
+ * trigger, etc.), only one Digest job lands.
+ */
+export interface EnqueueComposeDigestOptions {
+  /**
+   * ISO year-week string `YYYY-Www` (e.g. `2026-W21`) used in the
+   * `singletonKey`. Caller computes this in the Business's reference
+   * timezone so the dedupe key is stable per local week, not per UTC week.
+   */
+  isoYearWeek: string;
+}
+
+export async function enqueueComposeDigest(
+  payload: ComposeDigestPayload,
+  options: EnqueueComposeDigestOptions,
+): Promise<string | null> {
+  const boss = await startBoss();
+  await boss.createQueue(COMPOSE_DIGEST_JOB);
+  return boss.send(COMPOSE_DIGEST_JOB, payload, {
+    singletonKey: `${payload.business_id}-${options.isoYearWeek}`,
   });
 }

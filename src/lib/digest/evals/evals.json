@@ -1,0 +1,262 @@
+{
+  "skill_name": "digest-composer",
+  "prompt_version": "digest-v1",
+  "description": "Layer-2 evals for the Digest composer. Each case sets up a week of classified Reviews + a Business profile + week-over-week Theme aggregates; the runner calls `composeDigest()` and grades the structured output. We assert on tone, pattern kind, candidate-id validity, evidence-quote provenance, and zero-Review skip — NOT on the exact tailored prose. See ../README.md for how to run.",
+  "evals": [
+    {
+      "id": "high-volume-mixed",
+      "scenario": "A busy week with 5+ Reviews spanning service, wait_time, product_quality. Negatives dominate but not overwhelmingly so.",
+      "fixture": "high-volume-mixed",
+      "business": { "id": "biz-cafe", "name": "Acme Cafe", "industry": "cafe" },
+      "reviews": [
+        {
+          "id": "r-wait-1",
+          "starRating": 2,
+          "redactedText": "Waited 25 minutes for a sandwich at lunch on Friday.",
+          "postedAt": "2026-05-22T12:30:00Z",
+          "themes": ["wait_time"],
+          "sentiment": "negative"
+        },
+        {
+          "id": "r-wait-2",
+          "starRating": 3,
+          "redactedText": "Long queue at the till around midday — fewer staff than usual.",
+          "postedAt": "2026-05-21T12:30:00Z",
+          "themes": ["wait_time", "service"],
+          "sentiment": "negative"
+        },
+        {
+          "id": "r-service-1",
+          "starRating": 1,
+          "redactedText": "[REVIEWER] was ignored at the counter for ten minutes.",
+          "postedAt": "2026-05-20T14:00:00Z",
+          "themes": ["service"],
+          "sentiment": "negative"
+        },
+        {
+          "id": "r-quality-1",
+          "starRating": 2,
+          "redactedText": "The pastries were stale on Tuesday morning.",
+          "postedAt": "2026-05-19T09:00:00Z",
+          "themes": ["product_quality"],
+          "sentiment": "negative"
+        },
+        {
+          "id": "r-mixed-1",
+          "starRating": 4,
+          "redactedText": "Mostly good, slight slow service.",
+          "postedAt": "2026-05-18T16:00:00Z",
+          "themes": ["service"],
+          "sentiment": "neutral"
+        }
+      ],
+      "weekOverWeekTheme": {
+        "service": { "current": 3, "previous": 1 },
+        "wait_time": { "current": 4, "previous": 1 },
+        "product_quality": { "current": 1, "previous": 2 }
+      },
+      "expected_output": "Concerning tone; 3 distinct candidate-set patternIds; every evidence quote comes from the input reviews; themeMovement reflects deltas.",
+      "assertions": [
+        { "type": "mechanical", "id": "three_patterns", "description": "topPatterns has length 3" },
+        {
+          "type": "mechanical",
+          "id": "tone_concerning",
+          "description": "overallTone is \"concerning\""
+        },
+        {
+          "type": "mechanical",
+          "id": "pattern_ids_in_playbook",
+          "description": "every patternId is present in PLAYBOOK"
+        },
+        {
+          "type": "mechanical",
+          "id": "evidence_in_input",
+          "description": "every evidence.redactedQuote appears verbatim in the input reviews"
+        }
+      ]
+    },
+    {
+      "id": "all-positive",
+      "scenario": "Every Review is positive; week-over-week shows Theme volume up across the board.",
+      "fixture": "all-positive",
+      "business": { "id": "biz-bakery", "name": "Acme Bakery", "industry": "cafe" },
+      "reviews": [
+        {
+          "id": "r-pos-1",
+          "starRating": 5,
+          "redactedText": "The team are wonderful — [REVIEWER] always remembers my order.",
+          "postedAt": "2026-05-22T10:00:00Z",
+          "themes": ["service", "staff_attitude"],
+          "sentiment": "positive"
+        },
+        {
+          "id": "r-pos-2",
+          "starRating": 5,
+          "redactedText": "Best bakery in town. Pastries are perfect and the morning team is brilliant.",
+          "postedAt": "2026-05-21T09:00:00Z",
+          "themes": ["product_quality", "service"],
+          "sentiment": "positive"
+        },
+        {
+          "id": "r-pos-3",
+          "starRating": 5,
+          "redactedText": "Saturday morning visit was perfect — quick service and great coffee.",
+          "postedAt": "2026-05-23T09:00:00Z",
+          "themes": ["service", "wait_time"],
+          "sentiment": "positive"
+        },
+        {
+          "id": "r-pos-4",
+          "starRating": 5,
+          "redactedText": "Lovely shop, lovely team.",
+          "postedAt": "2026-05-20T15:00:00Z",
+          "themes": ["service"],
+          "sentiment": "positive"
+        }
+      ],
+      "weekOverWeekTheme": {
+        "service": { "current": 4, "previous": 1 },
+        "product_quality": { "current": 2, "previous": 0 }
+      },
+      "expected_output": "Celebrate tone; all 3 patterns are kind=reinforcement.",
+      "assertions": [
+        { "type": "mechanical", "id": "three_patterns", "description": "topPatterns has length 3" },
+        {
+          "type": "mechanical",
+          "id": "tone_celebrate",
+          "description": "overallTone is \"celebrate\""
+        },
+        {
+          "type": "mechanical",
+          "id": "all_reinforcement",
+          "description": "every patternId belongs to a Pattern with kind=\"reinforcement\""
+        }
+      ]
+    },
+    {
+      "id": "all-negative",
+      "scenario": "Multiple severe complaints across cleanliness, staff_attitude, service.",
+      "fixture": "all-negative",
+      "business": { "id": "biz-bar", "name": "Acme Bar", "industry": "restaurant" },
+      "reviews": [
+        {
+          "id": "r-neg-1",
+          "starRating": 1,
+          "redactedText": "Restrooms were filthy on Saturday evening — clearly hadn't been cleaned in hours.",
+          "postedAt": "2026-05-23T22:00:00Z",
+          "themes": ["cleanliness"],
+          "sentiment": "negative"
+        },
+        {
+          "id": "r-neg-2",
+          "starRating": 1,
+          "redactedText": "The bartender was rude and dismissive when I asked for a substitution.",
+          "postedAt": "2026-05-22T20:00:00Z",
+          "themes": ["staff_attitude"],
+          "sentiment": "negative"
+        },
+        {
+          "id": "r-neg-3",
+          "starRating": 1,
+          "redactedText": "Worst service experience of my year — nobody acknowledged us.",
+          "postedAt": "2026-05-21T21:00:00Z",
+          "themes": ["service"],
+          "sentiment": "negative"
+        },
+        {
+          "id": "r-neg-4",
+          "starRating": 2,
+          "redactedText": "Filthy floors throughout.",
+          "postedAt": "2026-05-20T22:00:00Z",
+          "themes": ["cleanliness"],
+          "sentiment": "negative"
+        }
+      ],
+      "weekOverWeekTheme": {
+        "cleanliness": { "current": 2, "previous": 0 },
+        "staff_attitude": { "current": 1, "previous": 0 },
+        "service": { "current": 3, "previous": 0 }
+      },
+      "expected_output": "Concerning tone; patterns are kind=remediation.",
+      "assertions": [
+        { "type": "mechanical", "id": "three_patterns", "description": "topPatterns has length 3" },
+        {
+          "type": "mechanical",
+          "id": "tone_concerning",
+          "description": "overallTone is \"concerning\""
+        },
+        {
+          "type": "mechanical",
+          "id": "all_remediation",
+          "description": "every patternId belongs to a Pattern with kind=\"remediation\""
+        }
+      ]
+    },
+    {
+      "id": "zero-review-week",
+      "scenario": "Edge case — Business with 0 Reviews in the period. The composer is NOT called; the cron handler skips before this point. This case is graded by the handler test, not the composer; included here so the eval suite documents the contract.",
+      "fixture": null,
+      "business": { "id": "biz-empty", "name": "Quiet Cafe", "industry": "cafe" },
+      "reviews": [],
+      "weekOverWeekTheme": {},
+      "expected_output": "Handler skips: NO Digest row, NO email. (Composer never invoked.)",
+      "assertions": [
+        {
+          "type": "mechanical",
+          "id": "skip_zero_reviews",
+          "description": "handler skips a zero-Review period without calling composeDigest, inserting a row, or sending mail"
+        }
+      ]
+    },
+    {
+      "id": "industry-misfit-barbershop",
+      "scenario": "A barbershop Business — restaurant-vertical Patterns must NOT appear in the LLM prompt's candidate set.",
+      "fixture": "barbershop-week",
+      "business": { "id": "biz-cuts", "name": "Acme Cuts", "industry": "barbershop" },
+      "reviews": [
+        {
+          "id": "r-bs-1",
+          "starRating": 2,
+          "redactedText": "Walk-in queue was out the door on Saturday morning.",
+          "postedAt": "2026-05-23T10:00:00Z",
+          "themes": ["wait_time", "service"],
+          "sentiment": "negative"
+        },
+        {
+          "id": "r-bs-2",
+          "starRating": 3,
+          "redactedText": "Booked appointments running 20 minutes late even though I arrived on time.",
+          "postedAt": "2026-05-22T11:00:00Z",
+          "themes": ["wait_time"],
+          "sentiment": "negative"
+        },
+        {
+          "id": "r-bs-3",
+          "starRating": 4,
+          "redactedText": "Fade was sharp but waited a while.",
+          "postedAt": "2026-05-21T15:00:00Z",
+          "themes": ["wait_time", "service"],
+          "sentiment": "neutral"
+        }
+      ],
+      "weekOverWeekTheme": {
+        "wait_time": { "current": 3, "previous": 1 },
+        "service": { "current": 2, "previous": 1 }
+      },
+      "expected_output": "Candidate Patterns include barbershop/salon verticals + universal; restaurant-only verticals (restaurant-food-safety-audit, restaurant-table-turn-review) are excluded.",
+      "assertions": [
+        { "type": "mechanical", "id": "three_patterns", "description": "topPatterns has length 3" },
+        {
+          "type": "mechanical",
+          "id": "no_restaurant_only_in_candidates",
+          "description": "the user message sent to Anthropic does NOT list restaurant-only Pattern ids"
+        },
+        {
+          "type": "mechanical",
+          "id": "barbershop_pattern_in_candidates",
+          "description": "the user message sent to Anthropic lists barbershop-walkin-management as a candidate"
+        }
+      ]
+    }
+  ]
+}
