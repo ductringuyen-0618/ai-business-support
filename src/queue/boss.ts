@@ -3,16 +3,32 @@
  *
  * Slice 1 wires the queue against the same Neon database (unpooled URL) and
  * exposes a single no-op `ping` job so the worker round-trip is provable in a
- * single `pnpm worker` shell. Subsequent slices add real jobs (`backfill_source`,
- * `ingest_review`, `fire_incident`, `deliver_escalation`, `compose_digest`).
+ * single `pnpm worker` shell. Slice 8 adds the `backfill_source` queue (the
+ * OAuth callback enqueues; the consumer lands in slice 10). Subsequent slices
+ * add `ingest_review`, `fire_incident`, `deliver_escalation`, `compose_digest`.
  */
 import PgBoss from "pg-boss";
 
 export const PING_JOB = "ping" as const;
 
+/**
+ * `backfill_source` — slice 8 enqueues; slice 10 implements the consumer.
+ *
+ * Per ADR-0007 the OAuth callback persists the `source_connections` row and
+ * enqueues exactly one job here; the worker (added in slice 10) pulls Reviews
+ * page-by-page from the Source, runs them through the standard ingest
+ * pipeline, and updates `loaded_count` / `backfill_status` as it goes.
+ */
+export const BACKFILL_SOURCE_JOB = "backfill_source" as const;
+
 export interface PingPayload {
   message: string;
   at: string;
+}
+
+export interface BackfillSourcePayload {
+  /** UUID of the `source_connections` row to backfill. */
+  source_connection_id: string;
 }
 
 function getQueueUrl(): string {
@@ -74,4 +90,20 @@ export async function enqueuePing(message: string): Promise<string | null> {
   await boss.createQueue(PING_JOB);
   const payload: PingPayload = { message, at: new Date().toISOString() };
   return boss.send(PING_JOB, payload);
+}
+
+/**
+ * Enqueue a `backfill_source` job. Called by the Google OAuth callback after
+ * the `source_connections` row is persisted; the consumer is added in slice 10.
+ *
+ * `createQueue` is idempotent in pg-boss v10, so it's safe to call here before
+ * the worker exists — the queue simply sits with one pending job until the
+ * slice-10 worker comes online to drain it.
+ */
+export async function enqueueBackfillSource(
+  payload: BackfillSourcePayload,
+): Promise<string | null> {
+  const boss = await startBoss();
+  await boss.createQueue(BACKFILL_SOURCE_JOB);
+  return boss.send(BACKFILL_SOURCE_JOB, payload);
 }

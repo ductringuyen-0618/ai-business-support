@@ -50,7 +50,11 @@ Postgres — switching to raw SQL or Kysely later would be a mechanical re-expor
 │   │   │   └── dashboard/page.tsx # "Hello, {Operator name}"
 │   │   └── api/
 │   │       ├── health/route.ts    # liveness probe
-│   │       └── ping/route.ts      # smoke-test pg-boss enqueue
+│   │       ├── ping/route.ts      # smoke-test pg-boss enqueue
+│   │       └── sources/           # Slice 8: Google OAuth + disconnect
+│   │           ├── google/oauth/start/route.ts
+│   │           ├── google/oauth/callback/route.ts
+│   │           └── [id]/disconnect/route.ts
 │   ├── middleware.ts              # Clerk auth middleware: protects /app/*
 │   ├── db/
 │   │   ├── schema.ts              # Drizzle schema (Businesses + Operators)
@@ -94,6 +98,63 @@ $EDITOR .env.local
 
 At minimum, `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, and
 `CLERK_SECRET_KEY` must be set for Slice 1 to boot.
+
+The Slice 8 Google OAuth flow additionally requires `GOOGLE_OAUTH_CLIENT_ID`,
+`GOOGLE_OAUTH_CLIENT_SECRET`, and `SOURCE_TOKEN_ENCRYPTION_KEY`. See
+[Google Cloud setup (Slice 8)](#google-cloud-setup-slice-8) below.
+
+### Google Cloud setup (Slice 8)
+
+To exercise the Google Business Profile connect flow you need a Google Cloud project with the
+Business Profile API enabled and an OAuth 2.0 client whose redirect URI points at this app.
+
+1. **Create / pick a Google Cloud project.** [`console.cloud.google.com`](https://console.cloud.google.com/)
+   → top bar → "New Project". Any project will do.
+2. **Enable the Business Profile API.** APIs & Services → Library → search for
+   "Business Profile API" → Enable.
+   - Public access to the API requires Google to approve your usage; the request form lives at
+     [Google's My Business API quota form](https://docs.google.com/forms/d/e/1FAIpQLSf67UpgHyjUyrtRzlsBnplmGcfBOY9XAfdosBHbS-LFkRzgxA/viewform).
+     You can develop end-to-end against a single test Business while the request is in flight.
+3. **Configure the OAuth consent screen.** APIs & Services → OAuth consent screen.
+   - User type: External.
+   - App name, support email, developer contact — required by Google but never shown to your
+     Operators during the dev test flow.
+   - Scopes: add `https://www.googleapis.com/auth/business.manage` (read-only — per
+     [ADR-0003](./docs/adr/0003-llm-drafted-replies-no-auto-post.md), we never request write
+     scopes).
+   - Add the email addresses of any test Operators while the consent screen is in "Testing".
+4. **Create an OAuth 2.0 Client ID.** APIs & Services → Credentials → "Create credentials" →
+   "OAuth client ID" → Application type "Web application".
+   - Authorized redirect URIs:
+     - `http://localhost:3000/api/sources/google/oauth/callback` (local dev)
+     - `https://<your-vercel-url>/api/sources/google/oauth/callback` (production)
+   - Save. Copy the **Client ID** and **Client secret**.
+5. **Generate a token-encryption key.** The app encrypts OAuth tokens at rest with AES-256-GCM:
+
+   ```sh
+   node -e 'console.log(require("crypto").randomBytes(32).toString("base64"))'
+   ```
+
+6. **Add the values to `.env.local`** (the same names also need to be set in Vercel for
+   Production + Preview):
+
+   ```env
+   GOOGLE_OAUTH_CLIENT_ID=...
+   GOOGLE_OAUTH_CLIENT_SECRET=...
+   SOURCE_TOKEN_ENCRYPTION_KEY=<output from step 5>
+   ```
+
+   See [`.env.example`](./.env.example) for the full list.
+
+7. **Apply the migration** (creates the `source_connections` table):
+
+   ```sh
+   pnpm db:migrate
+   ```
+
+8. **Try the flow.** `pnpm dev`, sign in, click "Connect Google" on the dashboard. After the
+   consent screen you should land back at `/app/dashboard?flash=google_connected` with a
+   "Connected" pill and a "Disconnect" button.
 
 ## Running
 
@@ -168,8 +229,11 @@ unit + integration tests for their modules).
      `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/app/dashboard`,
      `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/app/dashboard`
    - `APP_BASE_URL` (e.g. `https://your-app.vercel.app`)
-   - The remaining keys (Anthropic, Google, Resend, Twilio) are not required for Slice 1 but
-     should be added before later slices ship.
+   - Slice 8 adds: `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`,
+     `SOURCE_TOKEN_ENCRYPTION_KEY` — see
+     [Google Cloud setup (Slice 8)](#google-cloud-setup-slice-8).
+   - The remaining keys (Anthropic, Resend, Twilio) are not required yet but should be added
+     before later slices ship.
 3. Deploy. The first build will fail-fast if any required env var is missing.
 4. Run migrations against your production Neon DB once after the first deploy:
 
