@@ -9,8 +9,13 @@ import { NextResponse } from "next/server";
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 const isProtectedRoute = createRouteMatcher(["/app(.*)"]);
+// Public endpoints that Clerk itself (or other upstream systems) call. Must NOT
+// require a signed-in user — Clerk's webhook delivery has no session cookie,
+// it authenticates via Svix signature instead.
+const isPublicRoute = createRouteMatcher(["/api/webhooks/(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
+  if (isPublicRoute(req)) return;
   if (!isProtectedRoute(req)) return;
 
   const { userId } = await auth();

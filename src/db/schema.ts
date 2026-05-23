@@ -34,6 +34,11 @@ export const operators = pgTable("operators", {
   email: text("email").notNull(),
   name: text("name"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  // Soft-delete marker set when Clerk fires `user.deleted`. We keep the row so
+  // any Reviews/Incidents/Escalations historically attributed to this Operator
+  // continue to render with a name in the UI; only the Business cancellation
+  // flow (ADR-0006) triggers actual purges.
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
 
 export type Business = typeof businesses.$inferSelect;
