@@ -64,8 +64,8 @@ let cachedDefault: CachedDefault | null = null;
 export function getDefaultClient(): CachedDefault {
   if (cachedDefault) return cachedDefault;
   if (process.env.E2E_TEST_MODE === "1") {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const mockMod =
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       require("@/lib/test-mode/twilio-mock") as typeof import("@/lib/test-mode/twilio-mock");
     cachedDefault = { client: mockMod.createE2ETwilioMock(), from: "+15550000000" };
     return cachedDefault;

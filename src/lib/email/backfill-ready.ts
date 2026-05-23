@@ -39,8 +39,8 @@ export interface ResendLike {
  */
 function defaultResend(): ResendLike {
   if (process.env.E2E_TEST_MODE === "1") {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const mockMod =
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       require("@/lib/test-mode/resend-mock") as typeof import("@/lib/test-mode/resend-mock");
     const inner = mockMod.createE2EResendMock();
     return {

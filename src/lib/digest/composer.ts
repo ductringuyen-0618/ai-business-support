@@ -41,7 +41,7 @@ import type {
 } from "./composer-types";
 import type { Pattern, Theme } from "./playbook";
 import { selectCandidates } from "./playbook-selector";
-import { PROMPT_VERSION, RETRY_INSTRUCTION, SYSTEM_PROMPT, buildUserMessage } from "./prompts/v1";
+import { RETRY_INSTRUCTION, SYSTEM_PROMPT, buildUserMessage } from "./prompts/v1";
 
 export type {
   ClassifiedReview,
