@@ -22,8 +22,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:studio": "drizzle-kit studio",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "deletion-request": "tsx scripts/deletion-request.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.98.0",
