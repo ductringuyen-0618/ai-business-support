@@ -100,6 +100,18 @@ export async function exchangeGoogleAuthCode(
   code: string,
   fetchImpl: FetchLike = fetch,
 ): Promise<GoogleTokenResponse> {
+  // E2E hook: short-circuit the real Google round-trip so the spec is hermetic.
+  // The fake response is shaped exactly like what Google returns so downstream
+  // persistence (token encryption, expiry calc) runs the production code path.
+  if (process.env.E2E_TEST_MODE === "1") {
+    return {
+      access_token: `e2e-access-${code}`,
+      refresh_token: `e2e-refresh-${code}`,
+      expires_in: 3600,
+      token_type: "Bearer",
+      scope: GOOGLE_OAUTH_SCOPE,
+    };
+  }
   const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
   if (!clientId || !clientSecret) {

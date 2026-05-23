@@ -75,9 +75,21 @@ let cachedDefault: AnthropicMessageClient | null = null;
 /**
  * Lazily build (and memoise) the production SDK client. We resolve env vars at
  * call time so tests that set them per-case still work.
+ *
+ * E2E hook: when `E2E_TEST_MODE=1` we short-circuit to a deterministic in-process
+ * mock living under `src/lib/test-mode/anthropic-mock.ts`. The mock is loaded
+ * lazily so it doesn't ship in the production bundle (Next tree-shakes the
+ * unreachable branch when the env var isn't set at build time).
  */
 export function getDefaultClient(): AnthropicMessageClient {
   if (cachedDefault) return cachedDefault;
+  if (process.env.E2E_TEST_MODE === "1") {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mockMod =
+      require("@/lib/test-mode/anthropic-mock") as typeof import("@/lib/test-mode/anthropic-mock");
+    cachedDefault = mockMod.createE2EAnthropicMock();
+    return cachedDefault;
+  }
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     throw new Error(

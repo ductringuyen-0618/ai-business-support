@@ -68,9 +68,20 @@ let cachedDefault: ResendEmailClient | null = null;
 /**
  * Lazily build (and memoise) the production SDK client. We resolve env vars
  * at call time so tests that set them per-case still work.
+ *
+ * E2E hook: when `E2E_TEST_MODE=1` we short-circuit to an in-process mock
+ * (`src/lib/test-mode/resend-mock.ts`) that records the call payload via
+ * `src/lib/test-mode/recorder.ts` so the spec can assert on it.
  */
 export function getDefaultClient(): ResendEmailClient {
   if (cachedDefault) return cachedDefault;
+  if (process.env.E2E_TEST_MODE === "1") {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mockMod =
+      require("@/lib/test-mode/resend-mock") as typeof import("@/lib/test-mode/resend-mock");
+    cachedDefault = mockMod.createE2EResendMock();
+    return cachedDefault;
+  }
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     throw new Error(

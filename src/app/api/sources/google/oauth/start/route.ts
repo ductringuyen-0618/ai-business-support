@@ -44,10 +44,23 @@ export async function GET(request: Request) {
   }
 
   const { state, cookieValue } = mintOAuthState();
-  const redirectUrl = buildGoogleAuthorizationUrl({
-    state,
-    redirectUri: googleCallbackUri(),
-  });
+  // E2E hook: short-circuit the round-trip to Google by going straight to our
+  // own callback URL with a fake `code`. The state cookie below is still
+  // minted normally so the callback's HMAC check exercises the production
+  // code path. Playwright's `page.route` cannot reliably intercept top-level
+  // main-frame navigations to off-origin domains in every browser/Playwright
+  // combination — short-circuiting here is more robust and keeps the spec
+  // hermetic.
+  const redirectUrl =
+    process.env.E2E_TEST_MODE === "1"
+      ? new URL(
+          `/api/sources/google/oauth/callback?code=e2e-auth-code&state=${encodeURIComponent(state)}`,
+          request.url,
+        ).toString()
+      : buildGoogleAuthorizationUrl({
+          state,
+          redirectUri: googleCallbackUri(),
+        });
 
   const response = NextResponse.redirect(redirectUrl, { status: 302 });
   response.cookies.set({

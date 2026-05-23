@@ -83,7 +83,15 @@ export async function handleIngestReview(
 }
 
 async function processOne(job: Job<IngestReviewPayload>, deps: IngestReviewDeps): Promise<void> {
-  const { source_connection_id, raw_review } = job.data;
+  const { source_connection_id, raw_review: raw_review_in } = job.data;
+  // pg-boss persists job payloads as JSONB, which collapses Date instances to
+  // ISO strings. Rehydrate `posted_at` back into a Date so downstream code
+  // (the persistence layer, the Classifier prompt builder) sees the same type
+  // the in-process unit tests pass.
+  const raw_review =
+    raw_review_in.posted_at instanceof Date
+      ? raw_review_in
+      : { ...raw_review_in, posted_at: new Date(raw_review_in.posted_at) };
 
   // 1. Resolve the Business behind this source_connection. If the row has
   // vanished between enqueue and dispatch (Business cancelled mid-backfill),

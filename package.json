@@ -17,6 +17,8 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:debug": "PWDEBUG=1 playwright test --headed",
     "typecheck": "tsc --noEmit",
     "evals:classifier": "tsx src/lib/classifier/evals/run.ts",
     "evals:digest": "tsx src/lib/digest/evals/run.ts",

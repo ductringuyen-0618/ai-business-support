@@ -309,11 +309,81 @@ pnpm typecheck         # tsc --noEmit
 pnpm lint              # next lint (ESLint + next/typescript + prettier-compat)
 pnpm format            # prettier --write .
 pnpm format:check      # prettier --check . (used in CI)
+pnpm test              # vitest run — unit + integration tests
+pnpm test:e2e          # Playwright happy-path spec (see below)
 pnpm build             # production build; catches a different class of issue than dev
 ```
 
 All four pass on this slice. Tests are out of scope for the bootstrap (subsequent slices add
 unit + integration tests for their modules).
+
+## End-to-end tests (Slice 16)
+
+A single Playwright spec under `tests/e2e/happy-path.spec.ts` drives the full Operator
+journey — signup, Google connect, backfill, see Reviews, mark an Incident resolved, assert
+the mocked Resend send fired. The spec is hermetic: no live network to Google, Anthropic,
+Resend, or Twilio.
+
+### Prerequisites
+
+- Node 20+, pnpm.
+- PostgreSQL 16 client + server binaries on `PATH` (or under
+  `/usr/lib/postgresql/16/bin` on Debian/Ubuntu, or
+  `/opt/homebrew/opt/postgresql@16/bin` on macOS). Install with:
+  - Ubuntu/Debian: `sudo apt-get install postgresql-16`.
+  - macOS Homebrew: `brew install postgresql@16`.
+
+- A Playwright browser. The CI image at `/opt/pw-browsers` is sufficient; on a fresh
+  machine run `pnpm exec playwright install chromium`.
+
+### Running locally
+
+```sh
+pnpm test:e2e
+```
+
+The `globalSetup` in `tests/e2e/setup/global-setup.ts` will:
+
+1. Spin up an ephemeral Postgres 16 cluster under `$TMPDIR` (random port, `fsync=off`).
+2. Apply Drizzle migrations against it.
+3. Boot the Next dev server with `E2E_TEST_MODE=1`, which:
+   - Aliases `@clerk/nextjs(/server)?` to local stubs (`src/lib/test-mode/clerk-*-stub`)
+     that derive auth identity from the `x-e2e-clerk-user-id` request header.
+   - Aliases Anthropic / Resend / Twilio at the `getDefaultClient()` boundary to in-process
+     mocks under `src/lib/test-mode/` that record every call to a JSONL file the spec asserts on.
+   - Short-circuits the Google OAuth round-trip — `exchangeGoogleAuthCode` returns canned
+     tokens; the `oauth/start` handler redirects straight to `oauth/callback` so no real
+     `accounts.google.com` request is made.
+4. Boot the pg-boss worker pointed at the same Postgres so `backfill_source` →
+   `ingest_review` → `fire_incident` → `deliver_escalation` jobs drain end-to-end.
+
+The whole run takes ~28s on a dev laptop. Artefacts (`playwright-report/`,
+`test-results/`) are written on failure (trace, screenshot, video).
+
+### CI hookup
+
+CI is not wired in this slice. When you add `.github/workflows/ci.yml`, the E2E step is:
+
+```yaml
+- name: Install Postgres
+  run: sudo apt-get install -y postgresql-16
+- name: Install Playwright browser
+  run: pnpm exec playwright install --with-deps chromium
+- name: E2E
+  run: pnpm test:e2e
+- uses: actions/upload-artifact@v4
+  if: failure()
+  with:
+    name: playwright-report
+    path: playwright-report
+```
+
+### Test-mode env vars
+
+The dev server in E2E mode reads the env block from
+`tests/e2e/setup/global-setup.ts → buildEnv()`. Real `ANTHROPIC_API_KEY`, `RESEND_API_KEY`,
+`TWILIO_*`, `CLERK_*`, and `GOOGLE_*` are cleared or set to throwaway values —
+the mocks short-circuit before the SDKs read them.
 
 ## Deploying to Vercel
 
