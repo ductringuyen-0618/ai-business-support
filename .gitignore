@@ -1,0 +1,26 @@
+# Claude Code agent worktrees (transient, contain nested git repos)
+.claude/worktrees/
+
+# Local env (real values, never committed)
+.env
+.env.local
+.env*.local
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Node / Next.js (pre-emptive — the bootstrap agent will add more)
+node_modules/
+.next/
+out/
+*.log
+.turbo/
+
+# Coverage / test output
+coverage/
+.nyc_output/
+*-results-*.json
