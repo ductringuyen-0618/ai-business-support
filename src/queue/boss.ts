@@ -42,6 +42,16 @@ export const INGEST_REVIEW_JOB = "ingest_review" as const;
  */
 export const FIRE_INCIDENT_JOB = "fire_incident" as const;
 
+/**
+ * The `deliver_escalation` queue (slice 11). One job per `escalations` row.
+ * `fire_incident` enqueues with `startAfter = deliver_at` so quiet-hours-
+ * deferred Escalations sit in pg-boss until their window ends; the consumer
+ * sends through the Channel wrapper (Resend / Twilio) and flips
+ * `escalations.status` from `queued` to `sent` (or `failed` after retry
+ * exhaustion).
+ */
+export const DELIVER_ESCALATION_JOB = "deliver_escalation" as const;
+
 export interface PingPayload {
   message: string;
   at: string;
@@ -69,6 +79,16 @@ export interface IngestReviewPayload {
  */
 export interface FireIncidentPayload {
   review_id: string;
+}
+
+/**
+ * Payload for `deliver_escalation` (slice 11). Kept minimal for the same
+ * reason as `fire_incident` — the handler re-fetches the Escalation row +
+ * its joined Incident / Review / Business so a stale payload doesn't drift
+ * from the source of truth.
+ */
+export interface DeliverEscalationPayload {
+  escalation_id: string;
 }
 
 function getQueueUrl(): string {
@@ -167,4 +187,36 @@ export async function enqueueFireIncident(payload: FireIncidentPayload): Promise
   const boss = await startBoss();
   await boss.createQueue(FIRE_INCIDENT_JOB);
   return boss.send(FIRE_INCIDENT_JOB, payload);
+}
+
+/**
+ * Enqueue a `deliver_escalation` job (slice 11). Called by `handleFireIncident`
+ * once per `Delivery` returned by the `EscalationRouter`. `startAfter` carries
+ * the router's quiet-hours-deferred `deliver_at` so pg-boss holds the job
+ * until the window ends. We cap retries at 4 so a transient Resend / Twilio
+ * outage retries with backoff (≈ 30s, 60s, 120s, 240s) before we give up and
+ * mark the Escalation `failed` — that's the "Delivery failure recorded as
+ * `escalations.status=failed`" acceptance criteria.
+ */
+export interface EnqueueDeliverEscalationOptions {
+  /** When pg-boss is allowed to start the job. Defaults to "now". */
+  startAfter?: Date;
+}
+
+export const DELIVER_ESCALATION_RETRY = {
+  retryLimit: 4,
+  retryDelay: 30,
+  retryBackoff: true,
+} as const;
+
+export async function enqueueDeliverEscalation(
+  payload: DeliverEscalationPayload,
+  options: EnqueueDeliverEscalationOptions = {},
+): Promise<string | null> {
+  const boss = await startBoss();
+  await boss.createQueue(DELIVER_ESCALATION_JOB);
+  return boss.send(DELIVER_ESCALATION_JOB, payload, {
+    ...DELIVER_ESCALATION_RETRY,
+    ...(options.startAfter ? { startAfter: options.startAfter } : {}),
+  });
 }

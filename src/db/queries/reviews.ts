@@ -100,6 +100,7 @@ export async function findReviewBySourceId(
 }
 
 /**
+<<<<<<< HEAD
  * Input to the Deletion Request null-out (ADR-0006, slice 15).
  *
  * Exactly one of `reviewerDisplayName` / `sourceReviewIds` must be set; the
@@ -213,4 +214,30 @@ export async function nullReviewerByBusiness(
     affected: updated.length,
     matchedIds: updated.map((r) => r.id),
   };
+}
+
+/**
+ * Lookup helper for the `fire_incident` handler (slice 11): given a Review id,
+ * return the row plus the `business_id` it belongs to (joined via its
+ * source_connection). Returns null if the Review has vanished (Business
+ * cancelled mid-flight, or the source_connection was hard-deleted).
+ */
+export interface ReviewWithBusinessId extends ReviewRow {
+  businessId: string;
+}
+
+export async function findReviewWithBusinessId(id: string): Promise<ReviewWithBusinessId | null> {
+  const db = getNodeDb();
+  const rows = await db
+    .select({
+      review: reviews,
+      businessId: sourceConnections.businessId,
+    })
+    .from(reviews)
+    .innerJoin(sourceConnections, eq(reviews.sourceConnectionId, sourceConnections.id))
+    .where(eq(reviews.id, id))
+    .limit(1);
+  const row = rows[0];
+  if (!row) return null;
+  return { ...row.review, businessId: row.businessId };
 }

@@ -320,6 +320,55 @@ unit + integration tests for their modules).
    `pnpm worker` on a dev box) using the same `DATABASE_URL_UNPOOLED`. Picking that host is a
    later-slice decision.
 
+## Resend + Twilio setup (Slice 11)
+
+Slice 11 wires the Email + SMS Channels for Escalations. Both wrappers
+(`src/lib/email/resend.ts` and `src/lib/sms/twilio.ts`) lazily initialise from
+env vars, so the worker only fails at the moment of the first send if a key is
+missing — local development can run the rest of the pipeline without either
+service configured.
+
+### Resend (Email)
+
+1. Sign up at https://resend.com and create an API key (Settings → API Keys).
+2. Add a verified sending domain (Domains → Add Domain). Use whatever hostname
+   matches your `APP_BASE_URL` — the default `from` address is
+   `notifications@<APP_BASE_URL host>`.
+3. Drop the key into `.env.local`:
+
+   ```sh
+   RESEND_API_KEY=re_xxx
+   ```
+
+4. To test locally without a verified domain, you can route mail to
+   `delivered@resend.dev` (Resend's sink address) and watch deliverability in
+   the Resend dashboard. To bypass sending entirely in unit tests, inject a
+   stub `ResendEmailClient` via `sendEmail(input, { client })`.
+
+### Twilio (SMS)
+
+1. Sign up at https://www.twilio.com/ and provision a phone number capable of
+   sending SMS in your target market.
+2. Note your Account SID + Auth Token from the Twilio Console home page.
+3. Drop them into `.env.local`:
+
+   ```sh
+   TWILIO_ACCOUNT_SID=ACxxx
+   TWILIO_AUTH_TOKEN=xxx
+   TWILIO_FROM_NUMBER=+15555550123
+   ```
+
+4. The phone-verification round-trip (Operator settings UI) sends a 6-digit
+   code via this same Twilio account, so verifying a developer phone in the
+   UI is a good smoke-test that the SMS pipeline works.
+
+### Operator Channel preferences
+
+Sign in, click "Channels" in the app header. Email is on by default and always
+available (per [ADR-0009](./docs/adr/0009-clerk-for-auth.md)); SMS is opt-in
+and requires phone verification. Quiet hours and IANA timezone are settable
+per-Channel.
+
 ## Non-negotiable safety rules
 
 Per PRD #1 — these apply to every PR:

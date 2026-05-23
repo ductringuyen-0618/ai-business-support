@@ -84,6 +84,10 @@ export const operatorChannelPrefs = pgTable(
     quietHoursStart: time("quiet_hours_start"),
     quietHoursEnd: time("quiet_hours_end"),
     timezone: text("timezone").notNull().default("UTC"),
+    // Slice 11: the SMS address. Only populated on the SMS row, only after a
+    // successful phone-verification round-trip; null otherwise (including on
+    // the Email row, where the address lives on `operators.email`).
+    phoneE164: text("phone_e164"),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.operatorId, table.channel] }),
@@ -245,14 +249,99 @@ export const classifications = pgTable("classifications", {
  * ack deadline). The webhook handler inserts the id here with
  * `ON CONFLICT DO NOTHING` before doing any work; a row already present means
  * "we processed this", so the handler 204s without re-enqueuing duplicates.
- *
- * The row is intentionally tiny — we don't store the payload. Older rows can
- * be pruned by a future cron once enough delivery time has elapsed that Google
- * won't re-deliver (~7 days per Pub/Sub max retention).
  */
 export const processedPubsubMessages = pgTable("processed_pubsub_messages", {
   messageId: text("message_id").primaryKey(),
   processedAt: timestamp("processed_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * One row per Incident (CONTEXT.md "Incident"). Created by the `fire_incident`
+ * job (slice 11) when a Classification has `is_incident=true`. We keep the
+ * row separate from `classifications` because:
+ *
+ *   1. Re-classification under prompt v2 overwrites the Classification row in
+ *      place, but the Incident — and the Escalations spawned from it — must
+ *      survive that overwrite. The audit trail of "we paged you about this on
+ *      X" is independent of "the LLM's current opinion of severity".
+ *   2. The `incidents -> escalations` 1:N split is the natural place to hang
+ *      future fields like `acknowledged_at` (slice 12+).
+ *
+ * Idempotency: `review_id` is UNIQUE — re-firing on the same Review (pg-boss
+ * redelivery, slice-9 re-classification path, etc.) hits the same row.
+ *
+ * `severity` is denormalised from the Classification at fire-time so a future
+ * re-classification with a different severity does not retroactively change
+ * the historical Incident.
+ */
+export const incidents = pgTable(
+  "incidents",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    reviewId: uuid("review_id")
+      .notNull()
+      .references(() => reviews.id, { onDelete: "cascade" }),
+    businessId: uuid("business_id")
+      .notNull()
+      .references(() => businesses.id, { onDelete: "cascade" }),
+    severity: text("severity").notNull(),
+    firedAt: timestamp("fired_at", { withTimezone: true }).notNull().defaultNow(),
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+  },
+  (table) => ({
+    reviewUnique: uniqueIndex("incidents_review_id_unique").on(table.reviewId),
+  }),
+);
+
+/**
+ * Lifecycle of an Escalation row:
+ *   - `queued` — written by `fire_incident`; `deliver_escalation` job
+ *     scheduled with `startAfter = deliver_at`.
+ *   - `sent` — the channel wrapper returned successfully.
+ *   - `failed` — pg-boss exhausted its retries on a transient error, or the
+ *     wrapper raised a non-retryable error. Final state; no further attempts.
+ */
+export const escalationStatusEnum = pgEnum("escalation_status", ["queued", "sent", "failed"]);
+
+/**
+ * One row per (Incident, Operator, Channel) Delivery (CONTEXT.md
+ * "Escalation"). Materialises the `Delivery[]` produced by the
+ * `EscalationRouter` so the pipeline can resume mid-flight after a worker
+ * restart: `fire_incident` writes the rows and enqueues `deliver_escalation`
+ * jobs; the consumer flips `status` and writes `delivered_at` on success.
+ */
+export const escalations = pgTable("escalations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  incidentId: uuid("incident_id")
+    .notNull()
+    .references(() => incidents.id, { onDelete: "cascade" }),
+  operatorId: uuid("operator_id")
+    .notNull()
+    .references(() => operators.id, { onDelete: "cascade" }),
+  channel: channelEnum("channel").notNull(),
+  queuedAt: timestamp("queued_at", { withTimezone: true }).notNull().defaultNow(),
+  deliveredAt: timestamp("delivered_at", { withTimezone: true }),
+  status: escalationStatusEnum("status").notNull().default("queued"),
+});
+
+/**
+ * Pending phone-number verifications (slice 11). One row per Operator at a
+ * time — re-starting verification overwrites the existing pending row so a
+ * second "Verify" click invalidates the earlier code. Row is deleted on
+ * successful confirm (the verified number then lives on
+ * `operator_channel_prefs.phone_e164`).
+ *
+ * `code_hash` is a SHA-256 of the 6-digit code; we never store the code in
+ * plaintext so a DB dump cannot be used to phone-hijack Operators mid-flight.
+ */
+export const phoneVerifications = pgTable("phone_verifications", {
+  operatorId: uuid("operator_id")
+    .primaryKey()
+    .references(() => operators.id, { onDelete: "cascade" }),
+  phoneE164: text("phone_e164").notNull(),
+  codeHash: text("code_hash").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export type Business = typeof businesses.$inferSelect;
@@ -269,3 +358,9 @@ export type ClassificationRow = typeof classifications.$inferSelect;
 export type NewClassificationRow = typeof classifications.$inferInsert;
 export type ProcessedPubsubMessageRow = typeof processedPubsubMessages.$inferSelect;
 export type NewProcessedPubsubMessageRow = typeof processedPubsubMessages.$inferInsert;
+export type IncidentRow = typeof incidents.$inferSelect;
+export type NewIncidentRow = typeof incidents.$inferInsert;
+export type EscalationRow = typeof escalations.$inferSelect;
+export type NewEscalationRow = typeof escalations.$inferInsert;
+export type PhoneVerificationRow = typeof phoneVerifications.$inferSelect;
+export type NewPhoneVerificationRow = typeof phoneVerifications.$inferInsert;

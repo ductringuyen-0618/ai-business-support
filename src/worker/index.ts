@@ -3,11 +3,14 @@
  *
  * Run with `pnpm worker`. Subscribes to the queues we know about and stays up
  * until SIGINT / SIGTERM. Slice 1 wires the `ping` smoke-test handler;
- * slice 9 wires `ingest_review`; later slices add escalation, digest,
- * backfill, fire_incident handlers here.
+ * slice 9 wires `ingest_review`; slice 10 wires `backfill_source`; slice 11
+ * wires `fire_incident` + `deliver_escalation`; later slices add the digest
+ * handler here.
  */
 import {
   BACKFILL_SOURCE_JOB,
+  DELIVER_ESCALATION_JOB,
+  FIRE_INCIDENT_JOB,
   INGEST_REVIEW_JOB,
   PING_JOB,
   startBoss,
@@ -15,6 +18,8 @@ import {
 } from "../queue/boss";
 import { getIngestReviewConcurrency } from "../queue/config";
 import { handleBackfillSource } from "../queue/handlers/backfill-source";
+import { handleDeliverEscalation } from "../queue/handlers/deliver-escalation";
+import { handleFireIncident } from "../queue/handlers/fire-incident";
 import { handleIngestReview } from "../queue/handlers/ingest-review";
 import { handlePing } from "../queue/handlers/ping";
 
@@ -39,12 +44,26 @@ async function main() {
   // `backfill_source` (slice 10). One job per (Business, Source) connect;
   // each job walks every page of historical Reviews and enqueues an
   // `ingest_review` per Review. We run a small batch so a backlog of fresh
-  // connects can drain in parallel without starving ingest. Per-Business
-  // serialisation is enforced naturally by there being one job per
-  // SourceConnection.
+  // connects can drain in parallel without starving ingest.
   await boss.createQueue(BACKFILL_SOURCE_JOB);
   await boss.work(BACKFILL_SOURCE_JOB, { batchSize: 2 }, handleBackfillSource);
   console.log(`[worker] subscribed to queue: ${BACKFILL_SOURCE_JOB} (batchSize=2)`);
+
+  // `fire_incident` (slice 11). One Incident per Review at most.
+  await boss.createQueue(FIRE_INCIDENT_JOB);
+  await boss.work(FIRE_INCIDENT_JOB, handleFireIncident);
+  console.log(`[worker] subscribed to queue: ${FIRE_INCIDENT_JOB}`);
+
+  // `deliver_escalation` (slice 11). One outbound Email or SMS per job.
+  // `includeMetadata` exposes `retryCount` so the handler can mark the
+  // Escalation `failed` on the final attempt.
+  await boss.createQueue(DELIVER_ESCALATION_JOB);
+  await boss.work(
+    DELIVER_ESCALATION_JOB,
+    { batchSize: 5, includeMetadata: true },
+    handleDeliverEscalation,
+  );
+  console.log(`[worker] subscribed to queue: ${DELIVER_ESCALATION_JOB}`);
 
   console.log("[worker] ready. press ctrl-c to stop.");
 }
