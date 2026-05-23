@@ -8,6 +8,13 @@
       "when": 1779516876483,
       "tag": "0000_init_businesses_and_operators",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1779520240181,
+      "tag": "0001_operators_deleted_at",
+      "breakpoints": true
     }
   ]
 }
