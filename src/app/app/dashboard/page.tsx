@@ -2,26 +2,41 @@ import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { getOperatorWithBusinessByClerkUserId } from "@/db/queries/operators";
+import { countUnclassifiedReviewsForBusiness, listReviewsForBusiness } from "@/db/queries/reviews";
 import { getSourceConnectionsForBusiness } from "@/db/queries/source-connections";
 
 import { ConnectGoogleButton, DashboardFlash, DisconnectGoogleButton } from "./connections";
+import { BackfillBanner } from "./_components/backfill-banner";
+import { FilterBar } from "./_components/filter-bar";
+import { PAGE_SIZE, parseDashboardFilters, resolveDateRange } from "./_components/filters";
+import { Pagination } from "./_components/pagination";
+import { ReviewRow } from "./_components/review-row";
+import { UnclassifiedBanner } from "./_components/unclassified-banner";
 
 /**
- * Dashboard shell.
+ * Operator dashboard (slice 12, issue #14).
  *
- * Resolves the Operator + Business from the DB (seeded by the Clerk webhook)
- * rather than only the Clerk session. Per ADR-0009 the Clerk session is
- * sufficient for identity, but every business-level decision in this app keys
- * off our local `business_id`, so we read it here once and route on it.
+ * Server component. Reads filters from `searchParams`, runs the query helpers
+ * once, and composes the page. The filter bar / pagination / drawer mutate
+ * the URL via `next/navigation` and the server re-renders on the new query.
  *
- * If the local row hasn't appeared yet (webhook still in flight, or Clerk
- * delivery failing), we render a "membership pending" state instead of
- * crashing — the webhook will catch up on retry.
+ * Layout:
+ *   1. Header with operator + business name.
+ *   2. Flash banner from `?flash=` (Google OAuth success/failure carry-over).
+ *   3. Backfill banner (only when connected + backfill_status != complete).
+ *   4. Unclassified-Reviews banner (only when count > 0).
+ *   5. Google Source connect/disconnect row.
+ *   6. Filter bar.
+ *   7. Review list + pagination.
  *
- * Slice 8: render the Google Source connection state — "Connect Google" CTA
- * when no `source_connections` row exists, a status pill + Disconnect button
- * when one does. The OAuth callback redirects here with `?flash=...` for
- * one-shot success / failure banners.
+ * Data flow per render:
+ *   - operator + business resolution (1 query).
+ *   - source connections (1 query, already shown by slice 8).
+ *   - listReviewsForBusiness with parsed filters (2 queries — page + count).
+ *   - countUnclassifiedReviewsForBusiness (1 query).
+ *   - countUnresolvedIncidentsForBusiness is also read here so the layout's
+ *     nav badge stays consistent with the page; the layout re-reads it but
+ *     having a server-component-local snapshot avoids a flash on slow nav.
  */
 export default async function DashboardPage({
   searchParams,
@@ -65,12 +80,28 @@ export default async function DashboardPage({
   }
 
   const { business } = membership;
+  const filters = parseDashboardFilters(params);
+  const range = resolveDateRange(filters);
+
   const sourceConnections = await getSourceConnectionsForBusiness(business.id);
-  // We treat `disconnected` rows as "not connected" for the dashboard CTA — a
-  // disconnected row is just an empty slot waiting for re-auth, not a live
-  // connection to manage.
   const googleConnection =
     sourceConnections.find((c) => c.source === "google" && c.status !== "disconnected") ?? null;
+
+  const [reviewList, unclassifiedCount] = await Promise.all([
+    listReviewsForBusiness({
+      businessId: business.id,
+      filters: {
+        themes: filters.themes,
+        ratings: filters.ratings,
+        since: range?.since,
+        until: range?.until,
+        incidentsOnly: filters.incidentsOnly,
+      },
+      page: filters.page,
+      perPage: PAGE_SIZE,
+    }),
+    countUnclassifiedReviewsForBusiness(business.id),
+  ]);
 
   return (
     <section className="space-y-6">
@@ -82,6 +113,18 @@ export default async function DashboardPage({
       </header>
 
       <DashboardFlash flash={flash} />
+
+      {googleConnection ? (
+        <BackfillBanner
+          connectionId={googleConnection.id}
+          status={googleConnection.status}
+          backfillStatus={googleConnection.backfillStatus}
+          loadedCount={googleConnection.loadedCount}
+          estimatedTotal={googleConnection.estimatedTotal}
+        />
+      ) : null}
+
+      <UnclassifiedBanner count={unclassifiedCount} />
 
       <div className="rounded-lg border border-slate-200 bg-white p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -103,6 +146,32 @@ export default async function DashboardPage({
           )}
         </div>
       </div>
+
+      <FilterBar filters={filters} />
+
+      <section aria-label="Reviews" className="space-y-3">
+        {reviewList.rows.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">
+            {reviewList.total === 0 &&
+            filters.themes.length + filters.ratings.length === 0 &&
+            !filters.incidentsOnly &&
+            filters.preset === null
+              ? "No Reviews yet — once your backfill finishes they’ll show up here."
+              : "No Reviews match the current filters."}
+          </div>
+        ) : (
+          reviewList.rows.map((row) => (
+            <ReviewRow
+              key={row.review.id}
+              review={row.review}
+              classification={row.classification}
+              incident={row.incident}
+            />
+          ))
+        )}
+      </section>
+
+      <Pagination page={filters.page} total={reviewList.total} perPage={PAGE_SIZE} />
     </section>
   );
 }
@@ -122,3 +191,7 @@ function StatusPill({ status }: { status: string }) {
     </span>
   );
 }
+
+// Force-dynamic so Clerk's `currentUser()` cookie read isn't treated as a
+// static-render error during `next build`.
+export const dynamic = "force-dynamic";
