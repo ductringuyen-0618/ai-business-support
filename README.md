@@ -156,6 +156,80 @@ Business Profile API enabled and an OAuth 2.0 client whose redirect URI points a
    consent screen you should land back at `/app/dashboard?flash=google_connected` with a
    "Connected" pill and a "Disconnect" button.
 
+### Pub/Sub setup (Slice 10)
+
+Slice 10 adds two ingest paths that both funnel into the slice-9 `ingest_review` queue:
+
+- **Backfill**: a `backfill_source` pg-boss job walks every historical Review for a
+  newly-connected Business via paginated `GoogleAdapter.ingestPage` calls. The worker
+  (`pnpm worker`) drains this queue alongside `ingest_review`. See
+  [ADR-0007](./docs/adr/0007-backfill-queued-with-ready-email.md) for the queued-with-ready-email
+  UX. Operators receive a one-time "your dashboard is ready" email via Resend once the
+  backfill crosses ≥95% loaded (configured via `RESEND_API_KEY`, optional
+  `EMAIL_FROM_ADDRESS`).
+- **Live**: Google Business Profile pushes a Pub/Sub notification at
+  `POST /api/webhooks/google/pubsub` whenever a new Review appears. The webhook decodes
+  the push payload, resolves the affected SourceConnection by Google `locationId`, and
+  enqueues one `ingest_review` job per new Review. Pub/Sub re-delivers on any non-2xx
+  response — the handler is idempotent against this via the `processed_pubsub_messages`
+  table keyed on the Pub/Sub `messageId`.
+
+Wiring the live path requires a Google Cloud Pub/Sub topic + push subscription pointed at
+this app:
+
+1. **Create the topic.** In your Google Cloud project (the same one that hosts the OAuth
+   client from the Slice 8 runbook above): Pub/Sub → Topics → "Create topic". Name it
+   something like `gbp-review-notifications`.
+2. **Grant Google Business Profile permission to publish.** On the topic's Permissions
+   tab, add `mybusiness-api-pubsub@system.gserviceaccount.com` with the **Pub/Sub
+   Publisher** role. (Google's documented service account for Business Profile
+   notifications.)
+3. **Generate a verification token.**
+
+   ```sh
+   node -e 'console.log(require("crypto").randomBytes(32).toString("base64url"))'
+   ```
+
+   Put the value in your environment as `GOOGLE_PUBSUB_VERIFICATION_TOKEN` (locally in
+   `.env.local`; on Vercel for both Production and Preview).
+
+4. **Create a push subscription.** Subscriptions → "Create subscription".
+   - Delivery type: **Push**.
+   - Endpoint URL:
+     `${APP_BASE_URL}/api/webhooks/google/pubsub?token=${GOOGLE_PUBSUB_VERIFICATION_TOKEN}`
+     For example: `https://your-app.vercel.app/api/webhooks/google/pubsub?token=abc123`.
+     The webhook also accepts the token via `Authorization: Bearer <token>` if you
+     prefer header-based auth (configure the subscription with an authentication token).
+   - Ack deadline: 60 seconds is plenty — the webhook stamps the messageId and enqueues
+     work synchronously before responding.
+5. **Link Business Profile to the topic.** Configure your connected Business Profile
+   account to send Review notifications to the Pub/Sub topic. See Google's runbook at
+   [Pub/Sub notifications for the Business Profile API](https://developers.google.com/my-business/content/notification-setup).
+6. **Smoke-test.** Pub/Sub's "Test" button in the console sends a synthetic push;
+   confirm the webhook returns **204 No Content**. A second click with the same message
+   id should also return 204 (idempotent re-delivery — `processed_pubsub_messages`
+   catches it).
+
+Local development with `ngrok` is the easiest way to receive real push deliveries before
+deploying:
+
+```sh
+pnpm dev                          # http://localhost:3000
+ngrok http 3000                   # in a second terminal
+# Use the ngrok https URL as the subscription endpoint in step 4 above.
+```
+
+Env vars introduced or used by Slice 10:
+
+- `GOOGLE_PUBSUB_VERIFICATION_TOKEN` — shared secret between the Pub/Sub subscription
+  and this app's webhook.
+- `RESEND_API_KEY` — used for the "your dashboard is ready" email at ≥95% backfill
+  completion.
+- `EMAIL_FROM_ADDRESS` _(optional)_ — sender for outbound mail; defaults to a Resend
+  sandbox address that works without a verified domain.
+- `APP_BASE_URL` — already required by earlier slices; the "ready" email deep-links to
+  `${APP_BASE_URL}/app/dashboard`.
+
 ## Running
 
 ### Web app (Next.js)

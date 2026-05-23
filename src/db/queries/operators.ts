@@ -6,7 +6,7 @@
  * authorisation in later slices (per ADR-0009 — Clerk owns identity, but the
  * app enforces `WHERE business_id = current_operator.business_id`).
  */
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 
 import { getDb } from "@/db/client";
 import { businesses, operators } from "@/db/schema";
@@ -40,4 +40,17 @@ export async function getOperatorWithBusinessByClerkUserId(
   // A soft-deleted Operator is treated as "no membership" for routing purposes.
   if (row.operator.deletedAt !== null) return null;
   return row;
+}
+
+/**
+ * List active (not soft-deleted) Operators for a Business. Used by slice 10's
+ * backfill handler to fan out the "your dashboard is ready" email to every
+ * Operator the Business has on file.
+ */
+export async function listActiveOperatorsForBusiness(businessId: string): Promise<Operator[]> {
+  const db = getDb();
+  return db
+    .select()
+    .from(operators)
+    .where(and(eq(operators.businessId, businessId), isNull(operators.deletedAt)));
 }

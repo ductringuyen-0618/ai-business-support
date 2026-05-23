@@ -99,6 +99,8 @@ describe("handleGoogleOAuthCallback", () => {
       estimatedTotal: null,
       createdAt: new Date(),
       disconnectedAt: null,
+      googleLocationId: null,
+      readyEmailSentAt: null,
     });
     vi.mocked(queueMock.enqueueBackfillSource).mockResolvedValue("job_1");
   });
