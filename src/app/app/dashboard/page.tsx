@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getOperatorWithBusinessByClerkUserId } from "@/db/queries/operators";
 import { countUnclassifiedReviewsForBusiness, listReviewsForBusiness } from "@/db/queries/reviews";
 import { getSourceConnectionsForBusiness } from "@/db/queries/source-connections";
+import { getStarRatingTrend, getThemeFrequency } from "@/db/queries/trends";
 
 import { ConnectGoogleButton, DashboardFlash, DisconnectGoogleButton } from "./connections";
 import { BackfillBanner } from "./_components/backfill-banner";
@@ -11,6 +12,8 @@ import { FilterBar } from "./_components/filter-bar";
 import { PAGE_SIZE, parseDashboardFilters, resolveDateRange } from "./_components/filters";
 import { Pagination } from "./_components/pagination";
 import { ReviewRow } from "./_components/review-row";
+import { legendThemes, shapeStarTrend, shapeThemeFrequency } from "./_components/shape-trends";
+import { TrendsSection } from "./_components/trends-section";
 import { UnclassifiedBanner } from "./_components/unclassified-banner";
 
 /**
@@ -87,7 +90,17 @@ export default async function DashboardPage({
   const googleConnection =
     sourceConnections.find((c) => c.source === "google" && c.status !== "disconnected") ?? null;
 
-  const [reviewList, unclassifiedCount] = await Promise.all([
+  // Trend queries deliberately do NOT include the Theme filter — the bar
+  // chart is itself the Theme breakdown, and narrowing to one Theme would
+  // defeat the visualization. The list still respects the Theme filter.
+  const trendFilters = {
+    ratings: filters.ratings,
+    since: range?.since,
+    until: range?.until,
+    incidentsOnly: filters.incidentsOnly,
+  };
+
+  const [reviewList, unclassifiedCount, starTrendRows, themeFreqRows] = await Promise.all([
     listReviewsForBusiness({
       businessId: business.id,
       filters: {
@@ -101,7 +114,13 @@ export default async function DashboardPage({
       perPage: PAGE_SIZE,
     }),
     countUnclassifiedReviewsForBusiness(business.id),
+    getStarRatingTrend({ businessId: business.id, filters: trendFilters }),
+    getThemeFrequency({ businessId: business.id, filters: trendFilters }),
   ]);
+
+  const starTrend = shapeStarTrend(starTrendRows);
+  const themeFrequency = shapeThemeFrequency(themeFreqRows);
+  const themeLegend = legendThemes(themeFrequency);
 
   return (
     <section className="space-y-6">
@@ -148,6 +167,13 @@ export default async function DashboardPage({
       </div>
 
       <FilterBar filters={filters} />
+
+      <TrendsSection
+        starTrend={starTrend}
+        themeFrequency={themeFrequency}
+        themeLegend={themeLegend}
+        filters={filters}
+      />
 
       <section aria-label="Reviews" className="space-y-3">
         {reviewList.rows.length === 0 ? (

@@ -21,6 +21,8 @@ Locked by [ADR-0005](./docs/adr/0005-stack-nextjs-neon-vercel.md) and
 - **ORM / migrations**: [Drizzle ORM](https://orm.drizzle.team/) + `drizzle-kit`
 - **Background jobs**: [pg-boss](https://github.com/timgit/pg-boss) v10, against the same Neon DB
 - **Styling**: Tailwind CSS v3
+- **Charts**: [Recharts](https://recharts.org/) for the dashboard's Trends section (slice 13). See
+  [Why Recharts?](#why-recharts) below.
 - **Deploy**: Vercel (preview-per-PR), with the pg-boss worker run as a separate long-running
   process (Fly / Render / a Vercel cron — _to be decided in a follow-up slice_)
 
@@ -34,6 +36,27 @@ schema-as-code TypeScript model gives later slices `Business` / `Operator` row t
 (b) `drizzle-kit generate` produces deterministic, reviewable SQL migration files we commit to
 `drizzle/`, and (c) it's idiomatic for the Next.js + Neon stack. The generated SQL is plain
 Postgres — switching to raw SQL or Kysely later would be a mechanical re-export.
+
+## Why Recharts?
+
+Slice 13's dashboard adds two charts (star-rating trend + Theme frequency). We picked
+[Recharts](https://recharts.org/) over alternatives because:
+
+- **React-first + Tailwind-friendly.** Each chart is a JSX tree (`<LineChart>`, `<Bar>`,
+  `<Tooltip>` …) rather than an imperative D3 mount. Hooks like `useRouter` (for the
+  click-to-filter legend) drop in naturally.
+- **Next 15 App Router compatible.** Charts mount client-side only (the chart files are marked
+  `"use client"`); the server component computes the data in SQL and passes shaped arrays as
+  props. There's no SSR-mismatch story to debug.
+- **Right level of abstraction.** Visx gives more control but would have meant hand-wiring axes,
+  scales, and tooltips for a two-chart slice. Tremor ships nicer defaults but bakes in a design
+  system we don't want to adopt for one section.
+
+The Trends section lives at `src/app/app/dashboard/_components/trends-section.tsx` (client) and
+is fed by the SQL-aggregated `getStarRatingTrend` / `getThemeFrequency` helpers in
+`src/db/queries/trends.ts`. Per-Review bucketing happens in Postgres (`date_trunc`,
+`jsonb_array_elements_text`, window functions) so the wire format is one row per day / per
+(week, theme) — not 3,000 raw Reviews shipped to the browser.
 
 ## Repository layout
 
