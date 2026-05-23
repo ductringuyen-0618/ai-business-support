@@ -1,0 +1,349 @@
+{
+  "skill_name": "classifier",
+  "prompt_version": "v1",
+  "generated_at": "2026-05-23T07:18:26.995Z",
+  "mode": "fixture",
+  "summary": {
+    "cases": 9,
+    "passed": 9,
+    "failed": 0,
+    "pass_rate": 1,
+    "mechanical_assertions": 29,
+    "mechanical_passed": 29,
+    "behavioural_assertions": 2
+  },
+  "results": [
+    {
+      "id": "positive-5-star",
+      "passed": true,
+      "classification": {
+        "is_incident": false,
+        "severity": null,
+        "themes": ["service", "product_quality"],
+        "sentiment": "positive",
+        "suggested_reply": "Thank you so much for the kind words! We are thrilled you enjoyed the visit and look forward to seeing you again soon.",
+        "prompt_version": "v1"
+      },
+      "error": null,
+      "assertions": [
+        {
+          "id": "is_incident_false",
+          "type": "mechanical",
+          "description": "is_incident is false",
+          "passed": true
+        },
+        {
+          "id": "severity_null",
+          "type": "mechanical",
+          "description": "severity is null",
+          "passed": true
+        },
+        {
+          "id": "sentiment_positive",
+          "type": "mechanical",
+          "description": "sentiment is \"positive\"",
+          "passed": true
+        },
+        {
+          "id": "theme_overlap_service_or_product",
+          "type": "mechanical",
+          "description": "themes includes at least one of \"service\" or \"product_quality\"",
+          "passed": true
+        },
+        {
+          "id": "reply_under_500",
+          "type": "mechanical",
+          "description": "suggested_reply length is between 1 and 500 characters",
+          "passed": true
+        }
+      ],
+      "latencyMs": 2
+    },
+    {
+      "id": "mild-negative-2-star",
+      "passed": true,
+      "classification": {
+        "is_incident": false,
+        "severity": null,
+        "themes": ["wait_time", "service"],
+        "sentiment": "negative",
+        "suggested_reply": "Thank you for letting us know about the wait — we are sorry the visit was not what you hoped for. We are reviewing our staffing during peak hours and would love the chance to make it right next time.",
+        "prompt_version": "v1"
+      },
+      "error": null,
+      "assertions": [
+        {
+          "id": "is_incident_false",
+          "type": "mechanical",
+          "description": "is_incident is false",
+          "passed": true
+        },
+        {
+          "id": "severity_null",
+          "type": "mechanical",
+          "description": "severity is null",
+          "passed": true
+        },
+        {
+          "id": "sentiment_negative",
+          "type": "mechanical",
+          "description": "sentiment is \"negative\"",
+          "passed": true
+        },
+        {
+          "id": "theme_wait_time",
+          "type": "mechanical",
+          "description": "themes includes \"wait_time\"",
+          "passed": true
+        }
+      ],
+      "latencyMs": 1
+    },
+    {
+      "id": "four-star-slur",
+      "passed": true,
+      "classification": {
+        "is_incident": true,
+        "severity": "high",
+        "themes": ["staff_attitude", "service"],
+        "sentiment": "negative",
+        "suggested_reply": "Thank you for taking the time to share this — what you describe is completely unacceptable and not what we stand for. We would like to investigate immediately. Please reach out to the manager directly so we can address this with the staff involved and follow up with you personally.",
+        "prompt_version": "v1"
+      },
+      "error": null,
+      "assertions": [
+        {
+          "id": "is_incident_true",
+          "type": "mechanical",
+          "description": "is_incident is true",
+          "passed": true
+        },
+        {
+          "id": "severity_high",
+          "type": "mechanical",
+          "description": "severity is \"high\"",
+          "passed": true
+        },
+        {
+          "id": "theme_staff_attitude",
+          "type": "mechanical",
+          "description": "themes includes \"staff_attitude\"",
+          "passed": true
+        },
+        {
+          "id": "sentiment_negative",
+          "type": "mechanical",
+          "description": "sentiment is \"negative\"",
+          "passed": true
+        },
+        {
+          "id": "reply_no_invented_commitments",
+          "type": "behavioural",
+          "description": "suggested_reply does not invent a specific discount, refund amount, or firing commitment",
+          "passed": null,
+          "note": "deferred to LLM-judge or human review"
+        }
+      ],
+      "latencyMs": 0
+    },
+    {
+      "id": "food-safety",
+      "passed": true,
+      "classification": {
+        "is_incident": true,
+        "severity": "high",
+        "themes": ["cleanliness", "product_quality"],
+        "sentiment": "negative",
+        "suggested_reply": "We are extremely sorry to hear this and take any food-safety concern seriously. Please contact us directly at the restaurant so we can investigate the batch and timing, document what happened, and make this right. Thank you for telling us.",
+        "prompt_version": "v1"
+      },
+      "error": null,
+      "assertions": [
+        {
+          "id": "is_incident_true",
+          "type": "mechanical",
+          "description": "is_incident is true",
+          "passed": true
+        },
+        {
+          "id": "severity_high",
+          "type": "mechanical",
+          "description": "severity is \"high\"",
+          "passed": true
+        },
+        {
+          "id": "theme_safety_overlap",
+          "type": "mechanical",
+          "description": "themes includes at least one of \"cleanliness\" or \"product_quality\"",
+          "passed": true
+        }
+      ],
+      "latencyMs": 0
+    },
+    {
+      "id": "ambulance-medical-emergency",
+      "passed": true,
+      "classification": {
+        "is_incident": true,
+        "severity": "high",
+        "themes": ["accessibility", "staff_attitude", "service"],
+        "sentiment": "negative",
+        "suggested_reply": "This is deeply concerning and we are so sorry this happened. We want to understand exactly what occurred and review our staff response. Please contact the manager directly today so we can investigate, address the staff involved, and check in on the person affected.",
+        "prompt_version": "v1"
+      },
+      "error": null,
+      "assertions": [
+        {
+          "id": "is_incident_true",
+          "type": "mechanical",
+          "description": "is_incident is true",
+          "passed": true
+        },
+        {
+          "id": "severity_high",
+          "type": "mechanical",
+          "description": "severity is \"high\"",
+          "passed": true
+        },
+        {
+          "id": "theme_overlap_emergency",
+          "type": "mechanical",
+          "description": "themes includes at least one of \"staff_attitude\", \"accessibility\", or \"service\"",
+          "passed": true
+        }
+      ],
+      "latencyMs": 0
+    },
+    {
+      "id": "sarcasm",
+      "passed": true,
+      "classification": {
+        "is_incident": false,
+        "severity": null,
+        "themes": ["wait_time", "service"],
+        "sentiment": "negative",
+        "suggested_reply": "Thank you for the honest feedback — a 45-minute wait for a coffee is not acceptable and we hear you. We are looking at staffing during morning rush and would appreciate the chance to do better next time you stop in.",
+        "prompt_version": "v1"
+      },
+      "error": null,
+      "assertions": [
+        {
+          "id": "sentiment_negative",
+          "type": "mechanical",
+          "description": "sentiment is \"negative\"",
+          "passed": true
+        },
+        {
+          "id": "theme_wait_time",
+          "type": "mechanical",
+          "description": "themes includes \"wait_time\"",
+          "passed": true
+        }
+      ],
+      "latencyMs": 0
+    },
+    {
+      "id": "non-english-spanish",
+      "passed": true,
+      "classification": {
+        "is_incident": false,
+        "severity": null,
+        "themes": ["service", "product_quality"],
+        "sentiment": "positive",
+        "suggested_reply": "¡Muchísimas gracias por la reseña! Nos alegra mucho que disfrutara la comida y el servicio. ¡Esperamos verle pronto de nuevo!",
+        "prompt_version": "v1"
+      },
+      "error": null,
+      "assertions": [
+        {
+          "id": "is_incident_false",
+          "type": "mechanical",
+          "description": "is_incident is false",
+          "passed": true
+        },
+        {
+          "id": "sentiment_positive",
+          "type": "mechanical",
+          "description": "sentiment is \"positive\"",
+          "passed": true
+        },
+        {
+          "id": "reply_in_spanish",
+          "type": "behavioural",
+          "description": "suggested_reply is written in Spanish to match the Review language",
+          "passed": null,
+          "note": "deferred to LLM-judge or human review"
+        }
+      ],
+      "latencyMs": 0
+    },
+    {
+      "id": "edge-empty-text",
+      "passed": true,
+      "classification": {
+        "is_incident": false,
+        "severity": null,
+        "themes": ["other"],
+        "sentiment": "neutral",
+        "suggested_reply": "Thank you for the rating! If there is anything we can do better, please let us know.",
+        "prompt_version": "v1"
+      },
+      "error": null,
+      "assertions": [
+        {
+          "id": "is_incident_false",
+          "type": "mechanical",
+          "description": "is_incident is false",
+          "passed": true
+        },
+        {
+          "id": "severity_null",
+          "type": "mechanical",
+          "description": "severity is null",
+          "passed": true
+        },
+        {
+          "id": "themes_non_empty",
+          "type": "mechanical",
+          "description": "themes is a non-empty array",
+          "passed": true
+        }
+      ],
+      "latencyMs": 0
+    },
+    {
+      "id": "edge-accessibility-soft-complaint",
+      "passed": true,
+      "classification": {
+        "is_incident": true,
+        "severity": "medium",
+        "themes": ["accessibility", "staff_attitude"],
+        "sentiment": "negative",
+        "suggested_reply": "Thank you for telling us — service animals are absolutely welcome and the response you describe is not acceptable. We will retrain the team on accessibility and would love the chance to make this right next time you stop in.",
+        "prompt_version": "v1"
+      },
+      "error": null,
+      "assertions": [
+        {
+          "id": "is_incident_true",
+          "type": "mechanical",
+          "description": "is_incident is true",
+          "passed": true
+        },
+        {
+          "id": "theme_accessibility",
+          "type": "mechanical",
+          "description": "themes includes \"accessibility\"",
+          "passed": true
+        },
+        {
+          "id": "severity_set",
+          "type": "mechanical",
+          "description": "severity is one of \"low\", \"medium\", or \"high\"",
+          "passed": true
+        }
+      ],
+      "latencyMs": 0
+    }
+  ]
+}

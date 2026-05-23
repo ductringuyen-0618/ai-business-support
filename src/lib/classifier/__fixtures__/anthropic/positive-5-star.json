@@ -1,0 +1,15 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "<output>{\"is_incident\": false, \"severity\": null, \"themes\": [\"service\", \"product_quality\"], \"sentiment\": \"positive\", \"suggested_reply\": \"Thank you so much for the kind words! We are thrilled you enjoyed the visit and look forward to seeing you again soon.\"}</output>"
+    }
+  ],
+  "stop_reason": "end_turn",
+  "usage": {
+    "input_tokens": 850,
+    "output_tokens": 80,
+    "cache_creation_input_tokens": 850,
+    "cache_read_input_tokens": 0
+  }
+}

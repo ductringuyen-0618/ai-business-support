@@ -1,0 +1,20 @@
+{
+  "first": {
+    "content": [
+      {
+        "type": "text",
+        "text": "I'm sorry, I don't understand. Could you rephrase?"
+      }
+    ],
+    "stop_reason": "end_turn"
+  },
+  "second": {
+    "content": [
+      {
+        "type": "text",
+        "text": "<output>{\"is_incident\": true, \"severity\": null, \"themes\": [\"service\"], \"sentiment\": \"negative\", \"suggested_reply\": \"Sorry to hear that.\"}</output>"
+      }
+    ],
+    "stop_reason": "end_turn"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "<output>{\"is_incident\": false, \"severity\": null, \"themes\": [\"service\", \"product_quality\"], \"sentiment\": \"positive\", \"suggested_reply\": \"¡Muchísimas gracias por la reseña! Nos alegra mucho que disfrutara la comida y el servicio. ¡Esperamos verle pronto de nuevo!\"}</output>"
+    }
+  ],
+  "stop_reason": "end_turn",
+  "usage": {
+    "input_tokens": 858,
+    "output_tokens": 70,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 850
+  }
+}

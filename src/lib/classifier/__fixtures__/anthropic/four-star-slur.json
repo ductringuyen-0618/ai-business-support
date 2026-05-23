@@ -1,0 +1,15 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "<output>{\"is_incident\": true, \"severity\": \"high\", \"themes\": [\"staff_attitude\", \"service\"], \"sentiment\": \"negative\", \"suggested_reply\": \"Thank you for taking the time to share this — what you describe is completely unacceptable and not what we stand for. We would like to investigate immediately. Please reach out to the manager directly so we can address this with the staff involved and follow up with you personally.\"}</output>"
+    }
+  ],
+  "stop_reason": "end_turn",
+  "usage": {
+    "input_tokens": 870,
+    "output_tokens": 110,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 850
+  }
+}
