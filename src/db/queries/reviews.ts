@@ -100,7 +100,6 @@ export async function findReviewBySourceId(
 }
 
 /**
-<<<<<<< HEAD
  * Input to the Deletion Request null-out (ADR-0006, slice 15).
  *
  * Exactly one of `reviewerDisplayName` / `sourceReviewIds` must be set; the
