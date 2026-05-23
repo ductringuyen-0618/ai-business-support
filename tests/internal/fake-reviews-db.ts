@@ -46,6 +46,8 @@ export function seedSourceConnection(
     backfillStatus: "complete",
     loadedCount: 0,
     estimatedTotal: null,
+    googleLocationId: null,
+    readyEmailSentAt: null,
     createdAt: new Date(),
     disconnectedAt: null,
   };

@@ -6,8 +6,15 @@
  * slice 9 wires `ingest_review`; later slices add escalation, digest,
  * backfill, fire_incident handlers here.
  */
-import { INGEST_REVIEW_JOB, PING_JOB, startBoss, stopBoss } from "../queue/boss";
+import {
+  BACKFILL_SOURCE_JOB,
+  INGEST_REVIEW_JOB,
+  PING_JOB,
+  startBoss,
+  stopBoss,
+} from "../queue/boss";
 import { getIngestReviewConcurrency } from "../queue/config";
+import { handleBackfillSource } from "../queue/handlers/backfill-source";
 import { handleIngestReview } from "../queue/handlers/ingest-review";
 import { handlePing } from "../queue/handlers/ping";
 
@@ -28,6 +35,16 @@ async function main() {
   console.log(
     `[worker] subscribed to queue: ${INGEST_REVIEW_JOB} (batchSize=${ingestConcurrency})`,
   );
+
+  // `backfill_source` (slice 10). One job per (Business, Source) connect;
+  // each job walks every page of historical Reviews and enqueues an
+  // `ingest_review` per Review. We run a small batch so a backlog of fresh
+  // connects can drain in parallel without starving ingest. Per-Business
+  // serialisation is enforced naturally by there being one job per
+  // SourceConnection.
+  await boss.createQueue(BACKFILL_SOURCE_JOB);
+  await boss.work(BACKFILL_SOURCE_JOB, { batchSize: 2 }, handleBackfillSource);
+  console.log(`[worker] subscribed to queue: ${BACKFILL_SOURCE_JOB} (batchSize=2)`);
 
   console.log("[worker] ready. press ctrl-c to stop.");
 }

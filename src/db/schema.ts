@@ -152,6 +152,17 @@ export const sourceConnections = pgTable(
     estimatedTotal: integer("estimated_total"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     disconnectedAt: timestamp("disconnected_at", { withTimezone: true }),
+    // Slice 10: Google Business Profile `locationId` so the Pub/Sub webhook can
+    // map a `{ accountId, locationId, notificationType }` push payload back to
+    // a specific SourceConnection. Nullable because slice 8's OAuth callback
+    // doesn't populate it yet — a follow-up wires the post-OAuth call that
+    // lists the connected account's locations. Until then, Pub/Sub deliveries
+    // for an unmatched location are dropped (Pub/Sub still acks via 204).
+    googleLocationId: text("google_location_id"),
+    // Slice 10: one-shot marker for the "your dashboard is ready" email
+    // (ADR-0007). Set the first time the backfill handler crosses the ≥95%
+    // threshold; re-runs see it set and skip the send.
+    readyEmailSentAt: timestamp("ready_email_sent_at", { withTimezone: true }),
   },
   (table) => ({
     // One active connection per (Business, Source). Re-connect after disconnect
@@ -226,6 +237,24 @@ export const classifications = pgTable("classifications", {
   classifiedAt: timestamp("classified_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/**
+ * Slice 10: idempotency ledger for Pub/Sub push messages.
+ *
+ * Google Pub/Sub assigns each delivered message a stable `messageId` and will
+ * re-deliver the same id on any non-2xx response (or no response inside the
+ * ack deadline). The webhook handler inserts the id here with
+ * `ON CONFLICT DO NOTHING` before doing any work; a row already present means
+ * "we processed this", so the handler 204s without re-enqueuing duplicates.
+ *
+ * The row is intentionally tiny — we don't store the payload. Older rows can
+ * be pruned by a future cron once enough delivery time has elapsed that Google
+ * won't re-deliver (~7 days per Pub/Sub max retention).
+ */
+export const processedPubsubMessages = pgTable("processed_pubsub_messages", {
+  messageId: text("message_id").primaryKey(),
+  processedAt: timestamp("processed_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export type Business = typeof businesses.$inferSelect;
 export type NewBusiness = typeof businesses.$inferInsert;
 export type Operator = typeof operators.$inferSelect;
@@ -238,3 +267,5 @@ export type ReviewRow = typeof reviews.$inferSelect;
 export type NewReviewRow = typeof reviews.$inferInsert;
 export type ClassificationRow = typeof classifications.$inferSelect;
 export type NewClassificationRow = typeof classifications.$inferInsert;
+export type ProcessedPubsubMessageRow = typeof processedPubsubMessages.$inferSelect;
+export type NewProcessedPubsubMessageRow = typeof processedPubsubMessages.$inferInsert;

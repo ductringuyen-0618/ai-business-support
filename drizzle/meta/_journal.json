@@ -36,6 +36,13 @@
       "when": 1779523394389,
       "tag": "0004_reviews_and_classifications",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1779550187424,
+      "tag": "0005_pubsub_idempotency_and_source_columns",
+      "breakpoints": true
     }
   ]
 }
