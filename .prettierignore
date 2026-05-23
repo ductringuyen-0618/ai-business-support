@@ -1,0 +1,12 @@
+node_modules
+.next
+dist
+pnpm-lock.yaml
+.vercel
+drizzle/meta
+
+# Vendored / external content we do not own the style of.
+.claude
+CONTEXT.md
+docs/adr
+docs/agents
