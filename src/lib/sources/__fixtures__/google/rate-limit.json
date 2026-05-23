@@ -1,0 +1,13 @@
+{
+  "error": {
+    "code": 429,
+    "message": "Quota exceeded for quota metric 'Read requests' and limit 'Read requests per minute' of service 'mybusinessbusinessinformation.googleapis.com'.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.RetryInfo",
+        "retryDelay": "30s"
+      }
+    ]
+  }
+}

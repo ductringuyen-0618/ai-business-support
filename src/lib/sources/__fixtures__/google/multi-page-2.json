@@ -1,0 +1,21 @@
+{
+  "reviews": [
+    {
+      "name": "accounts/111/locations/222/reviews/AbZc-multi-2-a",
+      "reviewer": { "displayName": "Reviewer Two-A" },
+      "starRating": "THREE",
+      "comment": "Mid. Coffee was lukewarm.",
+      "createTime": "2026-05-08T10:00:00Z",
+      "updateTime": "2026-05-08T10:00:00Z"
+    },
+    {
+      "name": "accounts/111/locations/222/reviews/AbZc-multi-2-b",
+      "reviewer": { "displayName": "Reviewer Two-B" },
+      "starRating": "FIVE",
+      "comment": "Loved the new pastries.",
+      "createTime": "2026-05-07T10:00:00Z",
+      "updateTime": "2026-05-07T10:00:00Z"
+    }
+  ],
+  "nextPageToken": "page-3-token"
+}
