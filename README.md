@@ -362,21 +362,14 @@ The whole run takes ~28s on a dev laptop. Artefacts (`playwright-report/`,
 
 ### CI hookup
 
-CI is not wired in this slice. When you add `.github/workflows/ci.yml`, the E2E step is:
+CI runs on every PR and on pushes to `main` via [`.github/workflows/ci.yml`](./.github/workflows/ci.yml). Two jobs:
 
-```yaml
-- name: Install Postgres
-  run: sudo apt-get install -y postgresql-16
-- name: Install Playwright browser
-  run: pnpm exec playwright install --with-deps chromium
-- name: E2E
-  run: pnpm test:e2e
-- uses: actions/upload-artifact@v4
-  if: failure()
-  with:
-    name: playwright-report
-    path: playwright-report
-```
+- **Quality gates** (≈1 min): typecheck, lint, format:check, unit + integration tests.
+- **E2E (Playwright)** (≈3-5 min): installs Postgres 16 + Chromium, runs the happy-path spec. Uploads `playwright-report/` on failure.
+
+Both jobs are hermetic — no API keys or secrets needed. The E2E mocks Anthropic / Resend / Twilio / Google in-process via `src/lib/test-mode/`.
+
+No additional secrets need to be set on the repo for CI to pass.
 
 ### Test-mode env vars
 
